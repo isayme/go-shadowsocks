@@ -1,0 +1,16 @@
+.git
+
+.vs
+.vscode
+.DS_Store
+
+.dockerignore
+
+.editorconfig
+
+.gitignore
+
+.gitlab-ci.yml
+.travis.yml
+
+vendor
