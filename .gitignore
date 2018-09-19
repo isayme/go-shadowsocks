@@ -18,3 +18,5 @@ dist/*
 !dist/Dockerfile
 
 swagger.json
+
+config/*.dev.json
