@@ -11,12 +11,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Client client from sslocal
 type Client struct {
 	Conn net.Conn
 
 	cipher.Cipher
 }
 
+// NewClient create client instance
 func NewClient(conn net.Conn, c cipher.Cipher) (*Client, error) {
 	client := &Client{
 		Conn:   conn,
@@ -34,10 +36,12 @@ func (client Client) encrypt(dst, src []byte) {
 	client.Enc.XORKeyStream(dst, src)
 }
 
+// Close close connection
 func (client Client) Close() error {
 	return client.Conn.Close()
 }
 
+// Read read from client
 func (client *Client) Read(p []byte) (n int, err error) {
 	if client.Dec == nil {
 		iv := make([]byte, client.IvLen)
@@ -60,6 +64,7 @@ func (client *Client) Read(p []byte) (n int, err error) {
 	return n, err
 }
 
+// Write write to client
 func (client *Client) Write(p []byte) (n int, err error) {
 	var iv []byte
 
@@ -76,9 +81,9 @@ func (client *Client) Write(p []byte) (n int, err error) {
 	client.encrypt(data[len(iv):], p)
 	n, err = client.Conn.Write(data)
 	return n - len(iv), err
-	// return client.Conn.Write(data)
 }
 
+// ReadAddress read & parse remote address
 func (client *Client) ReadAddress() (string, error) {
 	var data []byte
 

@@ -90,7 +90,7 @@ func handleConnection(conn net.Conn, c cipher.Cipher) {
 
 	connection := connection.Connection{
 		Client: client,
-		Remote: remote,
+		Remote: connection.NewRemote(remote),
 	}
 
 	connection.Serve()
