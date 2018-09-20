@@ -2,10 +2,14 @@ package connection
 
 import (
 	"io"
+	"os"
 	"sync"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
 )
+
+// BuffSize buf size for io read/write
+var BuffSize = os.Getpagesize()
 
 // Connection connection from client
 type Connection struct {
@@ -20,8 +24,8 @@ func (c Connection) Serve() {
 
 	go func() {
 		defer wg.Done()
-		// defer c.Remote.Close()
-		_, err := io.Copy(c.Remote, c.Client)
+		buf := make([]byte, BuffSize)
+		_, err := io.CopyBuffer(c.Remote, c.Client, buf)
 		if err != nil {
 			logger.Errorf("io.Copy from client to remote fail, err: %+v", err)
 		}
@@ -29,8 +33,8 @@ func (c Connection) Serve() {
 
 	go func() {
 		defer wg.Done()
-		// defer c.Client.Close()
-		_, err := io.Copy(c.Client, c.Remote)
+		buf := make([]byte, BuffSize)
+		_, err := io.CopyBuffer(c.Client, c.Remote, buf)
 		if err != nil {
 			logger.Errorf("io.Copy from remote to client fail, err: %+v", err)
 		}
