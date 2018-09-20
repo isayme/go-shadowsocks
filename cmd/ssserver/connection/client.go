@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
@@ -83,8 +84,20 @@ func (client *Client) Write(p []byte) (n int, err error) {
 	return n - len(iv), err
 }
 
+// SetReadTimeout set read timeout
+func (client *Client) SetReadTimeout(timeout int) {
+	if timeout <= 0 {
+		client.Conn.SetReadDeadline(time.Time{})
+	} else {
+		client.Conn.SetReadDeadline(time.Now().Add(time.Second * time.Duration(timeout)))
+	}
+}
+
 // ReadAddress read & parse remote address
-func (client *Client) ReadAddress() (string, error) {
+func (client *Client) ReadAddress(timeout int) (string, error) {
+	client.SetReadTimeout(timeout)
+	defer client.SetReadTimeout(0)
+
 	var data []byte
 
 	data = make([]byte, 1)

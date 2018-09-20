@@ -60,11 +60,11 @@ func main() {
 			continue
 		}
 
-		go handleConnection(conn, *c)
+		go handleConnection(conn, *c, config.Timeout)
 	}
 }
 
-func handleConnection(conn net.Conn, c cipher.Cipher) {
+func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
 
 	client, err := connection.NewClient(conn, c)
@@ -75,7 +75,7 @@ func handleConnection(conn net.Conn, c cipher.Cipher) {
 	defer client.Close()
 
 	// read address type
-	address, err := client.ReadAddress()
+	address, err := client.ReadAddress(timeout)
 	if err != nil {
 		logger.Errorf("read address fail, err: %+v", err)
 		return
