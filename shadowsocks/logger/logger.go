@@ -13,7 +13,20 @@ func init() {
 	log.Formatter = &prefixed.TextFormatter{
 		FullTimestamp: true,
 	}
-	log.Level = logrus.DebugLevel
+	log.Level = logrus.InfoLevel
+}
+
+// SetLevel set log level
+func SetLevel(level string) error {
+	lvl, err := logrus.ParseLevel(level)
+	if err != nil {
+		return err
+	}
+
+	Printlnf("set log level [%s]", lvl.String())
+
+	log.SetLevel(lvl)
+	return nil
 }
 
 // Debug debug log

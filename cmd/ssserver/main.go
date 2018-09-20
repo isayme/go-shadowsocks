@@ -38,6 +38,8 @@ func main() {
 		logger.Panic(errors.Wrap(err, "parse config"))
 	}
 
+	logger.SetLevel(config.LogLevel)
+
 	address := fmt.Sprintf("%s:%d", config.Server, config.ServerPort)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {

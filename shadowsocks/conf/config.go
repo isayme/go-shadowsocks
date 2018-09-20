@@ -15,6 +15,8 @@ type Config struct {
 	ServerPort int    `json:"server_port"`
 
 	Timeout int `json:"timeout"` // in seconds
+
+	LogLevel string `json:"log_level"`
 }
 
 // ParseConfig parse config
@@ -29,6 +31,7 @@ func ParseConfig(path string) (config *Config, err error) {
 		Server:     defaultServer,
 		ServerPort: defaultPort,
 		Timeout:    defaultTimeout,
+		LogLevel:   defaultLogLevel,
 	}
 
 	if err = json.Unmarshal(data, config); err != nil {
