@@ -58,30 +58,28 @@ func (client *Client) Read(p []byte) (n int, err error) {
 		client.Dec = s
 	}
 
-	data := make([]byte, len(p))
-
-	n, err = client.Conn.Read(data)
-	client.decrypt(p, data[0:n])
+	n, err = client.Conn.Read(p)
+	client.decrypt(p, p[0:n])
 	return n, err
 }
 
 // Write write to client
 func (client *Client) Write(p []byte) (n int, err error) {
-	var iv []byte
-
 	if client.Enc == nil {
+		var iv []byte
 		iv, client.Enc, err = client.GetEncryptStream()
+		if err != nil {
+			return 0, err
+		}
+
+		_, err = client.Conn.Write(iv)
 		if err != nil {
 			return 0, err
 		}
 	}
 
-	data := make([]byte, len(iv)+len(p))
-	copy(data, iv)
-
-	client.encrypt(data[len(iv):], p)
-	n, err = client.Conn.Write(data)
-	return n - len(iv), err
+	client.encrypt(p, p)
+	return client.Conn.Write(p)
 }
 
 // SetReadTimeout set read timeout
@@ -98,10 +96,9 @@ func (client *Client) ReadAddress(timeout int) (string, error) {
 	client.SetReadTimeout(timeout)
 	defer client.SetReadTimeout(0)
 
-	var data []byte
+	data := make([]byte, 256)
 
-	data = make([]byte, 1)
-	if _, err := io.ReadFull(client, data); err != nil {
+	if _, err := io.ReadFull(client, data[:1]); err != nil {
 		return "", errors.Wrap(err, "read type")
 	}
 
@@ -114,33 +111,28 @@ func (client *Client) ReadAddress(timeout int) (string, error) {
 	var host string
 	switch typ {
 	case AddressTypeIPV4:
-		data = make([]byte, net.IPv4len)
-		if _, err := io.ReadFull(client, data); err != nil {
+		if _, err := io.ReadFull(client, data[:net.IPv4len]); err != nil {
 			return "", errors.Wrap(err, "read ipv4")
 		}
-		host = net.IP(data).String()
+		host = net.IP(data[:net.IPv4len]).String()
 	case AddressTypeDomain:
-		data = make([]byte, 1)
-		if _, err := io.ReadFull(client, data); err != nil {
+		if _, err := io.ReadFull(client, data[:1]); err != nil {
 			return "", errors.Wrap(err, "read domain length")
 		}
 		domainLen := int(data[0])
 
-		data = make([]byte, domainLen)
-		if _, err := io.ReadFull(client, data); err != nil {
+		if _, err := io.ReadFull(client, data[:domainLen]); err != nil {
 			return "", errors.Wrap(err, "read domain")
 		}
-		host = string(data)
+		host = string(data[:domainLen])
 	case AddressTypeIPV6:
-		data = make([]byte, net.IPv6len)
-		if _, err := io.ReadFull(client, data); err != nil {
+		if _, err := io.ReadFull(client, data[:net.IPv6len]); err != nil {
 			return "", errors.Wrap(err, "read ipv6")
 		}
-		host = net.IP(data).String()
+		host = net.IP(data[:net.IPv6len]).String()
 	}
 
-	data = make([]byte, 2)
-	if _, err := io.ReadFull(client, data); err != nil {
+	if _, err := io.ReadFull(client, data[:2]); err != nil {
 		return "", errors.Wrap(err, "read port")
 	}
 
