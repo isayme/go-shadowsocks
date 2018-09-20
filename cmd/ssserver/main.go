@@ -72,6 +72,7 @@ func handleConnection(conn net.Conn, c cipher.Cipher) {
 		logger.Errorf("NewClient fail, err: %+v", err)
 		return
 	}
+	defer client.Close()
 
 	// read address type
 	address, err := client.ReadAddress()
@@ -86,6 +87,8 @@ func handleConnection(conn net.Conn, c cipher.Cipher) {
 		logger.Warnf("dial remote [%s] failed, err: %+v", address, err)
 		return
 	}
+	defer remote.Close()
+
 	logger.Debugf("connect remote [%s] success", address)
 
 	connection := connection.Connection{
