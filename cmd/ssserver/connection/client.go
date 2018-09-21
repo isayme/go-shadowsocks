@@ -16,11 +16,11 @@ import (
 type Client struct {
 	Conn net.Conn
 
-	cipher.Cipher
+	*cipher.Cipher
 }
 
 // NewClient create client instance
-func NewClient(conn net.Conn, c cipher.Cipher) (*Client, error) {
+func NewClient(conn net.Conn, c *cipher.Cipher) (*Client, error) {
 	client := &Client{
 		Conn:   conn,
 		Cipher: c,
@@ -45,7 +45,7 @@ func (client Client) Close() error {
 // Read read from client
 func (client *Client) Read(p []byte) (n int, err error) {
 	if client.Dec == nil {
-		iv := make([]byte, client.IvLen)
+		iv := make([]byte, client.Info.IvLen)
 		if _, err = io.ReadFull(client.Conn, iv); err != nil {
 			return 0, err
 		}
