@@ -24,20 +24,20 @@ type Cipher struct {
 	Enc cipher.Stream
 	Dec cipher.Stream
 
-	*cipherInfo
+	key []byte
+
+	Info *cipherInfo
 }
 
 // GetEncryptStream get encrypt stream
-func (c Cipher) GetEncryptStream() (iv []byte, s cipher.Stream, err error) {
-	key := generateKey(c.Password, c.KeyLen)
-
-	iv = make([]byte, c.IvLen)
+func (c *Cipher) GetEncryptStream() (iv []byte, s cipher.Stream, err error) {
+	iv = make([]byte, c.Info.IvLen)
 	_, err = io.ReadFull(rand.Reader, iv)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	s, err = c.genEncryptStream(key, iv)
+	s, err = c.Info.genEncryptStream(c.key, iv)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -46,10 +46,16 @@ func (c Cipher) GetEncryptStream() (iv []byte, s cipher.Stream, err error) {
 }
 
 // GetDecryptStream get decrypt stream
-func (c Cipher) GetDecryptStream(iv []byte) (cipher.Stream, error) {
-	key := generateKey(c.Password, c.KeyLen)
+func (c *Cipher) GetDecryptStream(iv []byte) (cipher.Stream, error) {
+	return c.Info.genDecryptStream(c.key, iv)
+}
 
-	return c.genDecryptStream(key, iv)
+// Clone clone to ignore key generate
+func (c *Cipher) Clone() *Cipher {
+	nc := *c
+	nc.Dec = nil
+	nc.Dec = nil
+	return &nc
 }
 
 // NewCipher create cipher
@@ -58,12 +64,13 @@ func NewCipher(method string, password string) (*Cipher, error) {
 	c.Method = method
 	c.Password = password
 
-	info, ok := cipherMethods[method]
+	Info, ok := cipherMethods[method]
 	if !ok {
 		return nil, fmt.Errorf("unsupported method: %s", method)
 	}
 
-	c.cipherInfo = info
+	c.Info = Info
+	c.key = generateKey(c.Password, c.Info.KeyLen)
 
 	return c, nil
 }

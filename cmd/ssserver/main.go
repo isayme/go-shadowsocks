@@ -60,11 +60,11 @@ func main() {
 			continue
 		}
 
-		go handleConnection(conn, *c, config.Timeout)
+		go handleConnection(conn, c.Clone(), config.Timeout)
 	}
 }
 
-func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
+func handleConnection(conn net.Conn, c *cipher.Cipher, timeout int) {
 	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
 
 	client, err := connection.NewClient(conn, c)
