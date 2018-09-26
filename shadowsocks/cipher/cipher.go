@@ -30,19 +30,18 @@ type Cipher struct {
 }
 
 // GetEncryptStream get encrypt stream
-func (c *Cipher) GetEncryptStream() (iv []byte, s cipher.Stream, err error) {
-	iv = make([]byte, c.Info.IvLen)
+func (c *Cipher) GetEncryptStream(iv []byte) (s cipher.Stream, err error) {
 	_, err = io.ReadFull(rand.Reader, iv)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	s, err = c.Info.genEncryptStream(c.key, iv)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return iv, s, nil
+	return s, nil
 }
 
 // GetDecryptStream get decrypt stream

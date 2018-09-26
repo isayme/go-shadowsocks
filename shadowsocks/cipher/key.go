@@ -4,17 +4,21 @@ import (
 	"crypto/md5"
 	"math"
 
+	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 	"github.com/isayme/go-shadowsocks/shadowsocks/util"
 )
 
 func generateKey(password string, keyLen int) []byte {
 	count := int(math.Ceil(float64(keyLen) / float64(md5.Size)))
 
-	r := make([]byte, count*md5.Size)
+	r := bufferpool.Get(count * md5.Size)
+	defer bufferpool.Put(r)
 
 	copy(r, util.MD5([]byte(password)))
 
-	d := make([]byte, md5.Size+len(password))
+	d := bufferpool.Get(md5.Size + len(password))
+	defer bufferpool.Put(d)
+
 	start := 0
 	for i := 1; i < count; i++ {
 		start += md5.Size
@@ -23,5 +27,8 @@ func generateKey(password string, keyLen int) []byte {
 		copy(r[start:start+md5.Size], util.MD5(d))
 	}
 
-	return r[:keyLen]
+	key := make([]byte, keyLen)
+	copy(key, r[:keyLen])
+
+	return key
 }

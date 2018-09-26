@@ -7,6 +7,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
 	"github.com/pkg/errors"
@@ -45,7 +46,9 @@ func (client Client) Close() error {
 // Read read from client
 func (client *Client) Read(p []byte) (n int, err error) {
 	if client.Dec == nil {
-		iv := make([]byte, client.Info.IvLen)
+		iv := bufferpool.Get(client.Info.IvLen)
+		defer bufferpool.Put(iv)
+
 		if _, err = io.ReadFull(client.Conn, iv); err != nil {
 			return 0, err
 		}
@@ -66,8 +69,10 @@ func (client *Client) Read(p []byte) (n int, err error) {
 // Write write to client
 func (client *Client) Write(p []byte) (n int, err error) {
 	if client.Enc == nil {
-		var iv []byte
-		iv, client.Enc, err = client.GetEncryptStream()
+		iv := bufferpool.Get(client.Info.IvLen)
+		defer bufferpool.Put(iv)
+
+		client.Enc, err = client.GetEncryptStream(iv)
 		if err != nil {
 			return 0, err
 		}
@@ -96,7 +101,8 @@ func (client *Client) ReadAddress(timeout int) (string, error) {
 	client.SetReadTimeout(timeout)
 	defer client.SetReadTimeout(0)
 
-	data := make([]byte, 256)
+	data := bufferpool.Get(256)
+	defer bufferpool.Put(data)
 
 	if _, err := io.ReadFull(client, data[:1]); err != nil {
 		return "", errors.Wrap(err, "read type")

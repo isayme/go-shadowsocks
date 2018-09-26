@@ -50,8 +50,8 @@ type TimeoutReader interface {
 
 // code from io.CopyBuffer, paste here to enable read timeout
 func copyBuffer(dst io.Writer, src TimeoutReader, timeout int) (written int64, err error) {
-	buf := bufferpool.DefaultPool.Get()
-	defer bufferpool.DefaultPool.Put(buf)
+	buf := bufferpool.Get(bufSize)
+	defer bufferpool.Put(buf)
 
 	for {
 		src.SetReadTimeout(timeout)
