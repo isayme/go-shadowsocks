@@ -3,7 +3,6 @@ package connection
 import (
 	"io"
 	"os"
-	"sync"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
 )
@@ -16,15 +15,10 @@ type Connection struct {
 
 // Serve start exchange data between remote & client
 func (c Connection) Serve() {
-	wg := sync.WaitGroup{}
-	wg.Add(2)
-
 	// any of remote/client closed, the other one should close with quiet
 	closed := false
 
 	go func() {
-		defer wg.Done()
-
 		_, err := copyBuffer(c.Remote, c.Client)
 		if err != nil && !closed {
 			logger.Errorf("io.Copy from client to remote fail, err: %#v", err)
@@ -34,19 +28,13 @@ func (c Connection) Serve() {
 		c.Remote.Close()
 	}()
 
-	go func() {
-		defer wg.Done()
-
-		_, err := copyBuffer(c.Client, c.Remote)
-		if err != nil && !closed {
-			logger.Errorf("io.Copy from remote to client fail, err: %#v", err)
-		}
-		closed = true
-		logger.Debug("remote read end")
-		c.Client.Close()
-	}()
-
-	wg.Wait()
+	_, err := copyBuffer(c.Client, c.Remote)
+	if err != nil && !closed {
+		logger.Errorf("io.Copy from remote to client fail, err: %#v", err)
+	}
+	closed = true
+	logger.Debug("remote read end")
+	c.Client.Close()
 }
 
 var bufSize = os.Getpagesize()
