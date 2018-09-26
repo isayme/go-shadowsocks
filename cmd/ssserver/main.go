@@ -92,8 +92,9 @@ func handleConnection(conn net.Conn, c *cipher.Cipher, timeout int) {
 	logger.Debugf("connect remote [%s] success", address)
 
 	connection := connection.Connection{
-		Client: client,
-		Remote: connection.NewRemote(remote),
+		Client:  client,
+		Remote:  connection.NewRemote(remote),
+		Timeout: timeout,
 	}
 
 	connection.Serve()

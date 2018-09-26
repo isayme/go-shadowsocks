@@ -1,6 +1,9 @@
 package connection
 
-import "net"
+import (
+	"net"
+	"time"
+)
 
 // Remote remote connect
 type Remote struct {
@@ -11,6 +14,15 @@ type Remote struct {
 func NewRemote(conn net.Conn) *Remote {
 	return &Remote{
 		Conn: conn,
+	}
+}
+
+// SetReadTimeout set read timeout
+func (remote *Remote) SetReadTimeout(timeout int) {
+	if timeout <= 0 {
+		remote.Conn.SetReadDeadline(time.Time{})
+	} else {
+		remote.Conn.SetReadDeadline(time.Now().Add(time.Second * time.Duration(timeout)))
 	}
 }
 
