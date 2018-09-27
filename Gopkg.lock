@@ -2,30 +2,6 @@
 
 
 [[projects]]
-  digest = "1:c658e84ad3916da105a761660dcaeb01e63416c8ec7bc62256a9b411a05fcd67"
-  name = "github.com/mattn/go-colorable"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "167de6bfdfba052fa6b2d3664c8f5272e23c9072"
-  version = "v0.0.9"
-
-[[projects]]
-  digest = "1:0981502f9816113c9c8c4ac301583841855c8cf4da8c72f696b3ebedf6d0e4e5"
-  name = "github.com/mattn/go-isatty"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6ca4dbf54d38eea1a992b3c722a76a5d1c4cb25c"
-  version = "v0.0.4"
-
-[[projects]]
-  branch = "master"
-  digest = "1:2b32af4d2a529083275afc192d1067d8126b578c7a9613b26600e4df9c735155"
-  name = "github.com/mgutz/ansi"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "9520e82c474b0a04dd04f8a40959027271bab992"
-
-[[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -34,49 +10,25 @@
   version = "v0.8.0"
 
 [[projects]]
-  digest = "1:d867dfa6751c8d7a435821ad3b736310c2ed68945d05b50fb9d23aee0540c8cc"
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
-  version = "v1.0.6"
-
-[[projects]]
-  digest = "1:39a425f98fb19427061a693fe6bf0683c9bddec4b25b17067e34fdb465e39cb9"
-  name = "github.com/x-cray/logrus-prefixed-formatter"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "bb2702d423886830dee131692131d35648c382e2"
-  version = "v0.5.2"
-
-[[projects]]
-  branch = "master"
-  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
-  name = "golang.org/x/crypto"
-  source = "github.com/golang/crypto"
-  packages = ["ssh/terminal"]
-  pruneopts = "UT"
-  revision = "0e37d006457bf46f9e6692014ba72ef82c33022c"
-
-[[projects]]
-  branch = "master"
-  digest = "1:e10551220bea6da5274318545537df1012268056be6484b83a3338328050cde0"
-  name = "golang.org/x/sys"
-  source = "github.com/golang/sys"
+  digest = "1:6342a41a66687c0d0eb1f4d946447bfb808c5136adeb92903ed07972071e19ac"
+  name = "github.com/rs/zerolog"
   packages = [
-    "unix",
-    "windows",
+    ".",
+    "internal/cbor",
+    "internal/json",
+    "log",
   ]
   pruneopts = "UT"
-  revision = "ee1b12c67af419cf5a9be3bdbeea7fc1c5f32f11"
+  revision = "338f9bc14084d22cb8eeacd6492861f8449d715c"
+  version = "v1.9.1"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
     "github.com/pkg/errors",
-    "github.com/sirupsen/logrus",
-    "github.com/x-cray/logrus-prefixed-formatter",
+    "github.com/rs/zerolog",
+    "github.com/rs/zerolog/log",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -3,88 +3,76 @@ package logger
 import (
 	"fmt"
 
-	"github.com/sirupsen/logrus"
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
+	"github.com/rs/zerolog"
+
+	"github.com/rs/zerolog/log"
 )
 
-var log = logrus.New()
-
 func init() {
-	log.Formatter = &prefixed.TextFormatter{
-		FullTimestamp: true,
-	}
-	log.Level = logrus.InfoLevel
+	zerolog.TimeFieldFormat = "2006-01-02T15:04:05.000Z"
+	zerolog.CallerSkipFrameCount++
+
+	log.Logger = log.With().Caller().Logger()
 }
 
 // SetLevel set log level
 func SetLevel(level string) error {
-	lvl, err := logrus.ParseLevel(level)
+	lvl, err := zerolog.ParseLevel(level)
 	if err != nil {
 		return err
 	}
 
-	Printlnf("set log level [%s]", lvl.String())
-
-	log.SetLevel(lvl)
+	Infof("set log level [%s]", lvl.String())
+	zerolog.SetGlobalLevel(lvl)
 	return nil
 }
 
 // Debug debug log
 func Debug(args ...interface{}) {
-	log.Debug(args...)
+	log.Debug().Msg(fmt.Sprint(args...))
 }
 
 // Debugf debug log with format
 func Debugf(format string, args ...interface{}) {
-	log.Debugf(format, args...)
+	log.Debug().Msgf(format, args...)
 }
 
 // Info info log
 func Info(args ...interface{}) {
-	log.Info(args...)
+	log.Info().Msg(fmt.Sprint(args...))
 }
 
 // Infof info log with format
 func Infof(format string, args ...interface{}) {
-	log.Infof(format, args...)
+	log.Info().Msgf(format, args...)
 }
 
 // Warn warning log
 func Warn(args ...interface{}) {
-	log.Warn(args...)
+	log.Warn().Msg(fmt.Sprint(args...))
 }
 
 // Warnf warning log with format
 func Warnf(format string, args ...interface{}) {
-	log.Warnf(format, args...)
+	log.Warn().Msgf(format, args...)
 }
 
 // Error error log
 func Error(args ...interface{}) {
-	log.Error(args...)
+	log.Error().Msg(fmt.Sprint(args...))
 }
 
 // Errorf error log with format
 func Errorf(format string, args ...interface{}) {
-	log.Errorf(format, args...)
+	log.Error().Msgf(format, args...)
 }
 
 // Panic panic log
 func Panic(args ...interface{}) {
-	log.Panic(args...)
+	log.Panic().Msg(fmt.Sprint(args...))
 }
 
 // Panicf panic log with format
 func Panicf(format string, args ...interface{}) {
-	log.Panicf(format, args...)
-}
-
-// Println print log
-func Println(args ...interface{}) {
-	log.Println(args...)
-}
-
-// Printlnf print log with format
-func Printlnf(format string, args ...interface{}) {
-	log.Println(fmt.Sprintf(format, args...))
+	log.Panic().Msgf(format, args...)
 }
