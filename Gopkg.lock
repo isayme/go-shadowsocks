@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:9750b1cbd2706fd1fbb5df702208156799b5ecaa5b1b80123e4c0317772cb644"
+  name = "github.com/panjf2000/ants"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "29730bb70343924a2f56a13a9799611dd1cd27fd"
+  version = "v3.9"
+
+[[projects]]
   digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -26,6 +34,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
+    "github.com/panjf2000/ants",
     "github.com/pkg/errors",
     "github.com/rs/zerolog",
     "github.com/rs/zerolog/log",
