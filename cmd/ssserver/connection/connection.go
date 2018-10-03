@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
+	"github.com/panjf2000/ants"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
 )
@@ -21,7 +22,7 @@ func (c Connection) Serve() {
 	// any of remote/client closed, the other one should close with quiet
 	closed := false
 
-	go func() {
+	ants.Submit(func() error {
 		_, err := copyBuffer(c.Remote, c.Client, c.Timeout)
 		if err != nil && !closed {
 			logger.Errorf("io.Copy from client to remote fail, err: %#v", err)
@@ -29,7 +30,9 @@ func (c Connection) Serve() {
 		closed = true
 		logger.Debug("client read end")
 		c.Remote.Close()
-	}()
+
+		return nil
+	})
 
 	_, err := copyBuffer(c.Client, c.Remote, c.Timeout)
 	if err != nil && !closed {
