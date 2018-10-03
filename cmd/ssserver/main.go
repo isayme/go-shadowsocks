@@ -10,6 +10,7 @@ import (
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
+	"github.com/panjf2000/ants"
 	"github.com/pkg/errors"
 )
 
@@ -21,6 +22,8 @@ var showVersion = flag.Bool("v", false, "show version")
 var Version = "unkonwn"
 
 func main() {
+	defer ants.Release()
+
 	flag.Parse()
 
 	if *showHelp {
@@ -60,7 +63,10 @@ func main() {
 			continue
 		}
 
-		go handleConnection(conn, c.Clone(), config.Timeout)
+		ants.Submit(func() error {
+			handleConnection(conn, c.Clone(), config.Timeout)
+			return nil
+		})
 	}
 }
 
