@@ -1,13 +1,14 @@
-FROM golang:1.11.0-alpine AS builder
+FROM golang:1.11.2-alpine AS builder
 
-RUN wget https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 -q -O $GOPATH/bin/dep && chmod +x $GOPATH/bin/dep
-RUN apk update && apk add --no-cache git && rm -rf /var/cache/apk/*
+RUN apk update && apk add git
 
 ARG APP_PKG
 WORKDIR /go/src/${APP_PKG}
 
-COPY Gopkg.* ./
-RUN dep ensure -vendor-only
+ENV GO111MODULE=on
+
+COPY go.* ./
+RUN go mod download
 
 COPY . .
 
