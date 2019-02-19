@@ -5,20 +5,31 @@ import (
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/aead"
 	"github.com/isayme/go-shadowsocks/shadowsocks/stream"
+	"github.com/isayme/go-shadowsocks/shadowsocks/util"
 )
 
 // Cipher cipher interface
 type Cipher interface {
 	Read(p []byte) (n int, err error)
 	Write(p []byte) (n int, err error)
+	KeySize() int
+	Init(key []byte, conn net.Conn)
 }
 
 // NewCipher create cipher
-func NewCipher(method, password string, conn net.Conn) (Cipher, error) {
+func NewCipher(method string) Cipher {
 	switch method {
-	case "aes-128-gcm", "aes-192-gcm", "aes-256-gcm":
-		return aead.NewCipher(method, password, conn)
+	case "aes-128-gcm", "aes-192-gcm", "aes-256-gcm", "chacha20-ietf-poly1305":
+		return aead.NewCipher(method)
 	default:
-		return stream.NewCipher(method, password, conn)
+		return stream.NewCipher(method)
 	}
+}
+
+// NewKey create key from method/password
+func NewKey(method, password string) []byte {
+	cipher := NewCipher(method)
+
+	keySize := cipher.KeySize()
+	return util.KDF(password, keySize)
 }

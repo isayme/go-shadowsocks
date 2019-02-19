@@ -21,10 +21,8 @@ type cipherInfo struct {
 
 // Cipher cipher
 type Cipher struct {
-	Method   string
-	Password string
-
-	Conn net.Conn
+	Method string
+	Conn   net.Conn
 
 	Enc cipher.Stream
 	Dec cipher.Stream
@@ -35,8 +33,34 @@ type Cipher struct {
 	Info *cipherInfo
 }
 
-// GetEncryptStream get encrypt stream
-func (c *Cipher) GetEncryptStream(iv []byte) (s cipher.Stream, err error) {
+// NewCipher create cipher
+func NewCipher(method string) *Cipher {
+	c := &Cipher{}
+	c.Method = method
+
+	Info, ok := cipherMethods[method]
+	if !ok {
+		panic(fmt.Errorf("unsupported method: %s", method))
+	}
+
+	c.Info = Info
+
+	return c
+}
+
+// Init set key and conn
+func (c *Cipher) Init(key []byte, conn net.Conn) {
+	c.key = key
+	c.Conn = conn
+}
+
+// KeySize return key size
+func (c *Cipher) KeySize() int {
+	return c.Info.KeyLen
+}
+
+// getEncryptStream get encrypt stream
+func (c *Cipher) getEncryptStream(iv []byte) (s cipher.Stream, err error) {
 	_, err = io.ReadFull(rand.Reader, iv)
 	if err != nil {
 		return nil, err
@@ -50,8 +74,8 @@ func (c *Cipher) GetEncryptStream(iv []byte) (s cipher.Stream, err error) {
 	return s, nil
 }
 
-// GetDecryptStream get decrypt stream
-func (c *Cipher) GetDecryptStream(iv []byte) (cipher.Stream, error) {
+// getDecryptStream get decrypt stream
+func (c *Cipher) getDecryptStream(iv []byte) (cipher.Stream, error) {
 	return c.Info.genDecryptStream(c.key, iv)
 }
 
@@ -73,7 +97,7 @@ func (c *Cipher) Read(p []byte) (n int, err error) {
 			return 0, err
 		}
 
-		s, err := c.GetDecryptStream(iv)
+		s, err := c.getDecryptStream(iv)
 		if err != nil {
 			return 0, err
 		}
@@ -92,7 +116,7 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 		iv := bufferpool.Get(c.Info.IvLen)
 		defer bufferpool.Put(iv)
 
-		c.Enc, err = c.GetEncryptStream(iv)
+		c.Enc, err = c.getEncryptStream(iv)
 		if err != nil {
 			return 0, err
 		}
@@ -105,22 +129,4 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 
 	c.encrypt(p, p)
 	return c.Conn.Write(p)
-}
-
-// NewCipher create cipher
-func NewCipher(method string, password string, conn net.Conn) (*Cipher, error) {
-	c := &Cipher{}
-	c.Method = method
-	c.Password = password
-	c.Conn = conn
-
-	Info, ok := cipherMethods[method]
-	if !ok {
-		return nil, fmt.Errorf("unsupported method: %s", method)
-	}
-
-	c.Info = Info
-	c.key = generateKey(c.Password, c.Info.KeyLen)
-
-	return c, nil
 }
