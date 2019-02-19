@@ -1,4 +1,4 @@
-package cipher
+package stream
 
 import (
 	"crypto/md5"

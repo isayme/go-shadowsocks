@@ -17,25 +17,17 @@ import (
 type Client struct {
 	Conn net.Conn
 
-	*cipher.Cipher
+	Cipher cipher.Cipher
 }
 
 // NewClient create client instance
-func NewClient(conn net.Conn, c *cipher.Cipher) (*Client, error) {
+func NewClient(conn net.Conn, c cipher.Cipher) (*Client, error) {
 	client := &Client{
 		Conn:   conn,
 		Cipher: c,
 	}
 
 	return client, nil
-}
-
-func (client Client) decrypt(dst, src []byte) {
-	client.Dec.XORKeyStream(dst, src)
-}
-
-func (client Client) encrypt(dst, src []byte) {
-	client.Enc.XORKeyStream(dst, src)
 }
 
 // Close close connection
@@ -45,46 +37,12 @@ func (client Client) Close() error {
 
 // Read read from client
 func (client *Client) Read(p []byte) (n int, err error) {
-	if client.Dec == nil {
-		iv := bufferpool.Get(client.Info.IvLen)
-		defer bufferpool.Put(iv)
-
-		if _, err = io.ReadFull(client.Conn, iv); err != nil {
-			return 0, err
-		}
-
-		s, err := client.GetDecryptStream(iv)
-		if err != nil {
-			return 0, err
-		}
-
-		client.Dec = s
-	}
-
-	n, err = client.Conn.Read(p)
-	client.decrypt(p, p[0:n])
-	return n, err
+	return client.Cipher.Read(p)
 }
 
 // Write write to client
 func (client *Client) Write(p []byte) (n int, err error) {
-	if client.Enc == nil {
-		iv := bufferpool.Get(client.Info.IvLen)
-		defer bufferpool.Put(iv)
-
-		client.Enc, err = client.GetEncryptStream(iv)
-		if err != nil {
-			return 0, err
-		}
-
-		_, err = client.Conn.Write(iv)
-		if err != nil {
-			return 0, err
-		}
-	}
-
-	client.encrypt(p, p)
-	return client.Conn.Write(p)
+	return client.Cipher.Write(p)
 }
 
 // SetReadTimeout set read timeout

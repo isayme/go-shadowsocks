@@ -1,4 +1,4 @@
-package cipher
+package stream
 
 var cipherMethods = map[string]*cipherInfo{
 	"aes-128-cfb":   &cipherInfo{16, 16, newAESCFBEncryptStream, newAESCFBDecryptStream},

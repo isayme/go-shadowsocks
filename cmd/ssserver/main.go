@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/isayme/go-shadowsocks/cmd/ssserver/connection"
+	"github.com/isayme/go-shadowsocks/shadowsocks/aead"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
@@ -51,11 +52,6 @@ func main() {
 
 	logger.Infof("start listening %s", address)
 
-	c, err := cipher.NewCipher(config.Method, config.Password)
-	if err != nil {
-		logger.Panic(errors.Wrap(err, "create cipher"))
-	}
-
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -63,14 +59,19 @@ func main() {
 			continue
 		}
 
+		c, err := aead.NewCipher(config.Method, config.Password, conn)
+		if err != nil {
+			logger.Panic(errors.Wrap(err, "create cipher"))
+		}
+
 		ants.Submit(func() error {
-			handleConnection(conn, c.Clone(), config.Timeout)
+			handleConnection(conn, c, config.Timeout)
 			return nil
 		})
 	}
 }
 
-func handleConnection(conn net.Conn, c *cipher.Cipher, timeout int) {
+func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
 
 	client, err := connection.NewClient(conn, c)
