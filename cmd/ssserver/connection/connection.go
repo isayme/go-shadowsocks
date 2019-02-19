@@ -23,7 +23,8 @@ func (c Connection) Serve() {
 	closed := false
 
 	ants.Submit(func() error {
-		_, err := copyBuffer(c.Remote, c.Client, c.Timeout)
+		_, err := io.Copy(c.Remote, c.Client)
+		// _, err := copyBuffer(c.Remote, c.Client, c.Timeout)
 		if err != nil && !closed {
 			logger.Errorf("io.Copy from client to remote fail, err: %#v", err)
 		}
@@ -34,7 +35,8 @@ func (c Connection) Serve() {
 		return nil
 	})
 
-	_, err := copyBuffer(c.Client, c.Remote, c.Timeout)
+	_, err := io.Copy(c.Client, c.Remote)
+	// _, err := copyBuffer(c.Client, c.Remote, c.Timeout)
 	if err != nil && !closed {
 		logger.Errorf("io.Copy from remote to client fail, err: %#v", err)
 	}
