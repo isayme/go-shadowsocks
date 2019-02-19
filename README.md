@@ -2,7 +2,7 @@
 A fast and memory efficient shadowsocks server in Go.
 
 ## Dev
-> go run cmd/ssserver/main.go -c /path/to/config.json
+> CONF_FILE_PATH=go /path/to/config.json run cmd/ssserver/main.go
 
 ## Docker
 > docker pull isayme/shadowsocks:latest

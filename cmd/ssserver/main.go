@@ -15,7 +15,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-var configPath = flag.String("c", "/etc/shadowsocks.json", "config file path")
 var showHelp = flag.Bool("h", false, "show help")
 var showVersion = flag.Bool("v", false, "show version")
 

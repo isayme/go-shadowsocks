@@ -18,6 +18,9 @@ RUN CGO_ENABLED=0 go build -ldflags "-X main.Version=${APP_VERSION}" -o /app/sss
 FROM alpine
 WORKDIR /app
 
+# default config file
+ENV CONF_FILE_PATH=/etc/shadowsocks.json
+
 COPY config/config.default.json /etc/shadowsocks.json
 COPY --from=builder /app/ssserver /app/ssserver
 
