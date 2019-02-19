@@ -37,10 +37,7 @@ func main() {
 		os.Exit(0)
 	}
 
-	config, err := conf.ParseConfig(*configPath)
-	if err != nil {
-		logger.Panic(errors.Wrap(err, "parse config"))
-	}
+	config := conf.Get()
 
 	logger.SetLevel(config.LogLevel)
 

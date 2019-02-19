@@ -1,9 +1,7 @@
 package conf
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
+	config "github.com/isayme/go-config"
 )
 
 // Config config info
@@ -19,28 +17,16 @@ type Config struct {
 	LogLevel string `json:"log_level"`
 }
 
-// ParseConfig parse config
-func ParseConfig(path string) (config *Config, err error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
+var globalConfig = Config{
+	Method:     defaultMethod,
+	Server:     defaultServer,
+	ServerPort: defaultPort,
+	Timeout:    defaultTimeout,
+	LogLevel:   defaultLogLevel,
+}
 
-	config = &Config{
-		Method:     defaultMethod,
-		Server:     defaultServer,
-		ServerPort: defaultPort,
-		Timeout:    defaultTimeout,
-		LogLevel:   defaultLogLevel,
-	}
-
-	if err = json.Unmarshal(data, config); err != nil {
-		return nil, err
-	}
-
-	if config.Password == "" {
-		return nil, fmt.Errorf("password required")
-	}
-
-	return config, nil
+// Get parse config
+func Get() *Config {
+	config.Parse(&globalConfig)
+	return &globalConfig
 }
