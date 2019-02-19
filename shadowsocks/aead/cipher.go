@@ -14,13 +14,14 @@ import (
 
 // cipherInfo cipher definition
 type cipherInfo struct {
-	KeyLen   int
-	SaltLen  int
-	NonceLen int
-	TagLen   int
+	KeyLen int
 
 	genEncryptAEAD func(key, salt []byte, keyLen int) (cipher.AEAD, error)
 	genDecryptAEAD func(key, salt []byte, keyLen int) (cipher.AEAD, error)
+}
+
+func (ci *cipherInfo) getSaltLen() int {
+	return ci.KeyLen
 }
 
 // Cipher cipher
@@ -102,7 +103,7 @@ func (c *Cipher) read() error {
 // Read read from client
 func (c *Cipher) Read(p []byte) (n int, err error) {
 	if c.Dec == nil {
-		salt := bufferpool.Get(c.Info.SaltLen)
+		salt := bufferpool.Get(c.Info.getSaltLen())
 		defer bufferpool.Put(salt)
 
 		if _, err = io.ReadFull(c.Conn, salt); err != nil {
@@ -115,6 +116,9 @@ func (c *Cipher) Read(p []byte) (n int, err error) {
 		}
 
 		c.Dec = s
+
+		// init read nonce
+		c.rnonce = make([]byte, s.NonceSize())
 	}
 
 	if c.buffer.Len() > 0 {
@@ -148,7 +152,7 @@ func (c *Cipher) encrypt(dst, src []byte) (n int) {
 // Write write to client
 func (c *Cipher) Write(p []byte) (n int, err error) {
 	if c.Enc == nil {
-		salt := bufferpool.Get(c.Info.SaltLen)
+		salt := bufferpool.Get(c.Info.getSaltLen())
 		defer bufferpool.Put(salt)
 
 		c.Enc, err = c.getEncryptAEAD(salt)
@@ -160,6 +164,9 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 		if err != nil {
 			return 0, err
 		}
+
+		// init write nonce
+		c.wnonce = make([]byte, c.Enc.NonceSize())
 	}
 
 	length := len(p)
@@ -191,9 +198,6 @@ func NewCipher(method, password string, conn net.Conn) (*Cipher, error) {
 
 	c.Info = info
 	c.key = generateKey(c.Password, c.Info.KeyLen)
-
-	c.rnonce = make([]byte, info.NonceLen)
-	c.wnonce = make([]byte, info.NonceLen)
 
 	c.buffer = bytes.NewBuffer(nil)
 
