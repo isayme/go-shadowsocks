@@ -7,9 +7,9 @@ import (
 	"net"
 	"time"
 
+	"github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
-	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
 	"github.com/pkg/errors"
 )
 
