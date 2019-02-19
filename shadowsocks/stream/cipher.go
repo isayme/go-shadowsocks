@@ -1,6 +1,7 @@
 package stream
 
 import (
+	"bytes"
 	"crypto/cipher"
 	"crypto/rand"
 	"fmt"
@@ -8,6 +9,7 @@ import (
 	"net"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
+	"github.com/pkg/errors"
 )
 
 // cipherInfo cipher definition
@@ -27,6 +29,8 @@ type Cipher struct {
 	Enc cipher.Stream
 	Dec cipher.Stream
 
+	buffer *bytes.Buffer
+
 	key   []byte
 	nonce []byte
 
@@ -44,6 +48,8 @@ func NewCipher(method string) *Cipher {
 	}
 
 	c.Info = Info
+
+	c.buffer = bytes.NewBuffer(nil)
 
 	return c
 }
@@ -121,9 +127,12 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 			return 0, err
 		}
 
-		_, err = c.Conn.Write(iv)
+		nw, err := c.Conn.Write(iv)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "iv write")
+		}
+		if nw != len(iv) {
+			return 0, errors.New("iv short write")
 		}
 	}
 

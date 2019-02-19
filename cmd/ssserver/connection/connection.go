@@ -8,6 +8,7 @@ import (
 	"github.com/panjf2000/ants"
 
 	"github.com/isayme/go-logger"
+	"github.com/pkg/errors"
 )
 
 // Connection connection from client
@@ -23,10 +24,11 @@ func (c Connection) Serve() {
 	closed := false
 
 	ants.Submit(func() error {
-		_, err := io.Copy(c.Remote, c.Client)
-		// _, err := copyBuffer(c.Remote, c.Client, c.Timeout)
+		_, err := copyBuffer(c.Remote, c.Client, c.Timeout)
 		if err != nil && !closed {
-			logger.Errorf("io.Copy from client to remote fail, err: %#v", err)
+			if errors.Cause(err) != io.EOF {
+				logger.Errorf("[%s] copyBuffer from client to remote fail, err: %#v", c.Remote.Address, err)
+			}
 		}
 		closed = true
 		logger.Debug("client read end")
@@ -35,10 +37,11 @@ func (c Connection) Serve() {
 		return nil
 	})
 
-	_, err := io.Copy(c.Client, c.Remote)
-	// _, err := copyBuffer(c.Client, c.Remote, c.Timeout)
+	_, err := copyBuffer(c.Client, c.Remote, c.Timeout)
 	if err != nil && !closed {
-		logger.Errorf("io.Copy from remote to client fail, err: %#v", err)
+		if errors.Cause(err) != io.EOF {
+			logger.Errorf("[%s] copyBuffer from remote to client fail, err: %#v", c.Remote.Address, err)
+		}
 	}
 	closed = true
 	logger.Debug("remote read end")

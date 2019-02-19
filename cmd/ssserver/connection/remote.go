@@ -7,13 +7,15 @@ import (
 
 // Remote remote connect
 type Remote struct {
-	Conn net.Conn
+	Conn    net.Conn
+	Address string
 }
 
 // NewRemote create remote client
-func NewRemote(conn net.Conn) *Remote {
+func NewRemote(conn net.Conn, address string) *Remote {
 	return &Remote{
-		Conn: conn,
+		Conn:    conn,
+		Address: address,
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"time"
 
 	"github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/cmd/ssserver/connection"
@@ -82,7 +83,8 @@ func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 	}
 
 	logger.Infof("connecting remote [%s]", address)
-	remote, err := net.Dial("tcp", address)
+	// dial with timeout
+	remote, err := net.DialTimeout("tcp", address, 5*time.Second)
 	if err != nil {
 		logger.Warnf("dial remote [%s] failed, err: %+v", address, err)
 		return
@@ -93,7 +95,7 @@ func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 
 	connection := connection.Connection{
 		Client:  client,
-		Remote:  connection.NewRemote(remote),
+		Remote:  connection.NewRemote(remote, address),
 		Timeout: timeout,
 	}
 

@@ -10,6 +10,7 @@ import (
 	"net"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
+	"github.com/pkg/errors"
 )
 
 // cipherInfo cipher definition
@@ -95,12 +96,12 @@ func (c *Cipher) read() error {
 
 	_, err := io.ReadFull(c.Conn, sizeBuf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "aead read size")
 	}
 
 	ret, err := c.Dec.Open(sizeBuf[:0], c.rnonce, sizeBuf, nil)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "aead decrypt size")
 	}
 	increment(c.rnonce)
 	payloadSize := int(binary.BigEndian.Uint16(ret)&0x3FFF) + c.Dec.Overhead()
@@ -111,12 +112,12 @@ func (c *Cipher) read() error {
 
 	_, err = io.ReadFull(c.Conn, payloadBuf)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "aead read payload")
 	}
 
 	ret, err = c.Dec.Open(payloadBuf[:0], c.rnonce, payloadBuf, nil)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "aead decrypt payload")
 	}
 	increment(c.rnonce)
 	c.buffer.Write(ret)
@@ -184,9 +185,12 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 			return 0, err
 		}
 
-		_, err = c.Conn.Write(salt)
+		nw, err := c.Conn.Write(salt)
 		if err != nil {
-			return 0, err
+			return 0, errors.Wrap(err, "salt write")
+		}
+		if nw != len(salt) {
+			return 0, errors.New("salt short write")
 		}
 
 		// init write nonce
@@ -200,9 +204,9 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 
 	n = c.encrypt(buf, p)
 
-	_, err = c.Conn.Write(buf[:n])
+	nw, err := c.Conn.Write(buf[:n])
 	if err != nil {
-		return 0, err
+		return 0, errors.Wrapf(err, "write short: %d/%d", nw, n)
 	}
 
 	return length, nil
