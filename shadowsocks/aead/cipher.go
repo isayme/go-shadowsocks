@@ -26,24 +26,48 @@ func (ci *cipherInfo) getSaltLen() int {
 
 // Cipher cipher
 type Cipher struct {
-	Method   string
-	Password string
-
-	Conn net.Conn
+	Method string
+	Conn   net.Conn
 
 	Enc cipher.AEAD
 	Dec cipher.AEAD
 
 	key []byte
 
-	buffer    *bytes.Buffer
-	encBuffer *bytes.Buffer
-	minEncLen int
+	buffer *bytes.Buffer
 
 	rnonce []byte
 	wnonce []byte
 
 	Info *cipherInfo
+}
+
+// NewCipher create aead cipher
+func NewCipher(method string) *Cipher {
+	c := &Cipher{}
+	c.Method = method
+
+	info, ok := cipherMethods[method]
+	if !ok {
+		panic(fmt.Errorf("unsupported method: %s", method))
+	}
+
+	c.Info = info
+
+	c.buffer = bytes.NewBuffer(nil)
+
+	return c
+}
+
+// Init set key and conn
+func (c *Cipher) Init(key []byte, conn net.Conn) {
+	c.key = key
+	c.Conn = conn
+}
+
+// KeySize return key size
+func (c *Cipher) KeySize() int {
+	return c.Info.KeyLen
 }
 
 func (c *Cipher) getEncryptAEAD(salt []byte) (s cipher.AEAD, err error) {
@@ -184,22 +208,11 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 	return length, nil
 }
 
-// NewCipher create aead cipher
-func NewCipher(method, password string, conn net.Conn) (*Cipher, error) {
-	c := &Cipher{}
-	c.Method = method
-	c.Password = password
-	c.Conn = conn
-
-	info, ok := cipherMethods[method]
-	if !ok {
-		return nil, fmt.Errorf("unsupported method: %s", method)
+func increment(b []byte) {
+	for i := range b {
+		b[i]++
+		if b[i] != 0 {
+			return
+		}
 	}
-
-	c.Info = info
-	c.key = generateKey(c.Password, c.Info.KeyLen)
-
-	c.buffer = bytes.NewBuffer(nil)
-
-	return c, nil
 }

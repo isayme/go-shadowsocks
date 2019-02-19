@@ -8,7 +8,6 @@ import (
 
 	"github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/cmd/ssserver/connection"
-	"github.com/isayme/go-shadowsocks/shadowsocks/aead"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/shadowsocks/util"
@@ -46,6 +45,8 @@ func main() {
 
 	logger.Infow("start listening", "address", address, "method", config.Method)
 
+	key := cipher.NewKey(config.Method, config.Password)
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -53,10 +54,8 @@ func main() {
 			continue
 		}
 
-		c, err := aead.NewCipher(config.Method, config.Password, conn)
-		if err != nil {
-			logger.Panic(errors.Wrap(err, "create cipher"))
-		}
+		c := cipher.NewCipher(config.Method)
+		c.Init(key, conn)
 
 		ants.Submit(func() error {
 			handleConnection(conn, c, config.Timeout)
