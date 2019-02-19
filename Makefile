@@ -2,6 +2,10 @@ APP_NAME := shadowsocks
 APP_VERSION := $(shell git describe --tags)
 APP_PKG := $(shell echo ${PWD} | sed -e "s\#${GOPATH}/src/\#\#g")
 
+.PHONY: dev
+dev:
+	@CONF_FILE_PATH=${PWD}/config/config.dev.json go run cmd/ssserver/main.go
+
 .PHONY: image
 image:
 	docker build \
