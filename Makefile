@@ -18,6 +18,7 @@ build:
 
 .PHONY: image
 image:
+	@CGO_ENABLED=0 GOOS=linux GOARCH=amd64 make build
 	docker build --rm -t ${APP_NAME}:${APP_VERSION} .
 
 .PHONY: publish
