@@ -7,7 +7,7 @@ import (
 	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 	"github.com/panjf2000/ants"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
+	"github.com/isayme/go-logger"
 )
 
 // Connection connection from client

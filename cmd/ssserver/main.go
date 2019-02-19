@@ -6,11 +6,11 @@ import (
 	"net"
 	"os"
 
+	"github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/cmd/ssserver/connection"
 	"github.com/isayme/go-shadowsocks/shadowsocks/aead"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
-	"github.com/isayme/go-shadowsocks/shadowsocks/logger"
 	"github.com/panjf2000/ants"
 	"github.com/pkg/errors"
 )
@@ -50,7 +50,7 @@ func main() {
 		logger.Panic(errors.Wrap(err, "net.Listen"))
 	}
 
-	logger.Infof("start listening %s", address)
+	logger.Infow("start listening", "address", address, "method", config.Method)
 
 	for {
 		conn, err := listener.Accept()
