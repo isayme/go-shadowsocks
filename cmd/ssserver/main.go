@@ -11,15 +11,13 @@ import (
 	"github.com/isayme/go-shadowsocks/shadowsocks/aead"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
+	"github.com/isayme/go-shadowsocks/shadowsocks/util"
 	"github.com/panjf2000/ants"
 	"github.com/pkg/errors"
 )
 
 var showHelp = flag.Bool("h", false, "show help")
 var showVersion = flag.Bool("v", false, "show version")
-
-// Version current version
-var Version = "unkonwn"
 
 func main() {
 	defer ants.Release()
@@ -32,7 +30,7 @@ func main() {
 	}
 
 	if *showVersion {
-		fmt.Printf("%s: %s\n", os.Args[0], Version)
+		util.PrintVersion()
 		os.Exit(0)
 	}
 
