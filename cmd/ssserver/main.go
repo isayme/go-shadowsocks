@@ -1,14 +1,17 @@
 package main
 
 import (
+	"crypto/rand"
 	"flag"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"time"
 
 	"github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/cmd/ssserver/connection"
+	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/shadowsocks/util"
@@ -65,6 +68,8 @@ func main() {
 	}
 }
 
+const handleshakeTimeout = 5 // second
+
 func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
 
@@ -76,15 +81,22 @@ func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 	defer client.Close()
 
 	// read address type
-	address, err := client.ReadAddress(timeout)
+	address, err := client.ReadAddress(handleshakeTimeout) // 5s timeout for address
 	if err != nil {
-		logger.Errorf("read address fail, err: %+v", err)
+		logger.Errorw("read address fail", "err", err, "remoteAddr", conn.RemoteAddr().String())
+
+		// random response
+		buf := bufferpool.Get(16)
+		defer bufferpool.Put(buf)
+		io.ReadFull(rand.Reader, buf)
+		client.Write(buf)
+
 		return
 	}
 
 	logger.Infof("connecting remote [%s]", address)
 	// dial with timeout
-	remote, err := net.DialTimeout("tcp", address, 5*time.Second)
+	remote, err := net.DialTimeout("tcp", address, handleshakeTimeout*time.Second)
 	if err != nil {
 		logger.Warnf("dial remote [%s] failed, err: %+v", address, err)
 		return
