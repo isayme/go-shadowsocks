@@ -14,8 +14,8 @@ import (
 
 // cipherInfo cipher definition
 type cipherInfo struct {
-	KeyLen int
-	IvLen  int
+	KeySize int
+	IvSize  int
 
 	genEncryptStream func(key, iv []byte) (cipher.Stream, error)
 	genDecryptStream func(key, iv []byte) (cipher.Stream, error)
@@ -62,7 +62,7 @@ func (c *Cipher) Init(key []byte, conn net.Conn) {
 
 // KeySize return key size
 func (c *Cipher) KeySize() int {
-	return c.Info.KeyLen
+	return c.Info.KeySize
 }
 
 // getEncryptStream get encrypt stream
@@ -96,7 +96,7 @@ func (c *Cipher) encrypt(dst, src []byte) {
 // Read read from client
 func (c *Cipher) Read(p []byte) (n int, err error) {
 	if c.Dec == nil {
-		iv := bufferpool.Get(c.Info.IvLen)
+		iv := bufferpool.Get(c.Info.IvSize)
 		defer bufferpool.Put(iv)
 
 		if _, err = io.ReadFull(c.Conn, iv); err != nil {
@@ -119,7 +119,7 @@ func (c *Cipher) Read(p []byte) (n int, err error) {
 // Write write to client
 func (c *Cipher) Write(p []byte) (n int, err error) {
 	if c.Enc == nil {
-		iv := bufferpool.Get(c.Info.IvLen)
+		iv := bufferpool.Get(c.Info.IvSize)
 		defer bufferpool.Put(iv)
 
 		c.Enc, err = c.getEncryptStream(iv)

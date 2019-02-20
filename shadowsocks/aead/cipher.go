@@ -15,14 +15,14 @@ import (
 
 // cipherInfo cipher definition
 type cipherInfo struct {
-	KeyLen int
+	KeySize int
 
-	genEncryptAEAD func(key, salt []byte, keyLen int) (cipher.AEAD, error)
-	genDecryptAEAD func(key, salt []byte, keyLen int) (cipher.AEAD, error)
+	genEncryptAEAD func(key, salt []byte, keySize int) (cipher.AEAD, error)
+	genDecryptAEAD func(key, salt []byte, keySize int) (cipher.AEAD, error)
 }
 
-func (ci *cipherInfo) getSaltLen() int {
-	return ci.KeyLen
+func (ci *cipherInfo) getSaltSize() int {
+	return ci.KeySize
 }
 
 // Cipher cipher
@@ -68,7 +68,7 @@ func (c *Cipher) Init(key []byte, conn net.Conn) {
 
 // KeySize return key size
 func (c *Cipher) KeySize() int {
-	return c.Info.KeyLen
+	return c.Info.KeySize
 }
 
 func (c *Cipher) getEncryptAEAD(salt []byte) (s cipher.AEAD, err error) {
@@ -77,7 +77,7 @@ func (c *Cipher) getEncryptAEAD(salt []byte) (s cipher.AEAD, err error) {
 		return nil, err
 	}
 
-	s, err = c.Info.genEncryptAEAD(c.key, salt, c.Info.KeyLen)
+	s, err = c.Info.genEncryptAEAD(c.key, salt, c.Info.KeySize)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +86,7 @@ func (c *Cipher) getEncryptAEAD(salt []byte) (s cipher.AEAD, err error) {
 }
 
 func (c *Cipher) getDecryptAEAD(salt []byte) (cipher.AEAD, error) {
-	return c.Info.genDecryptAEAD(c.key, salt, c.Info.KeyLen)
+	return c.Info.genDecryptAEAD(c.key, salt, c.Info.KeySize)
 }
 
 func (c *Cipher) read() error {
@@ -128,7 +128,7 @@ func (c *Cipher) read() error {
 // Read read from client
 func (c *Cipher) Read(p []byte) (n int, err error) {
 	if c.Dec == nil {
-		salt := bufferpool.Get(c.Info.getSaltLen())
+		salt := bufferpool.Get(c.Info.getSaltSize())
 		defer bufferpool.Put(salt)
 
 		if _, err = io.ReadFull(c.Conn, salt); err != nil {
@@ -159,9 +159,9 @@ func (c *Cipher) Read(p []byte) (n int, err error) {
 }
 
 func (c *Cipher) encrypt(dst, src []byte) (n int) {
-	length := len(src)
+	size := len(src)
 
-	binary.BigEndian.PutUint16(dst, uint16(length))
+	binary.BigEndian.PutUint16(dst, uint16(size))
 
 	ret := c.Enc.Seal(dst[:0], c.wnonce, dst[:2], nil)
 	increment(c.wnonce)
@@ -177,7 +177,7 @@ func (c *Cipher) encrypt(dst, src []byte) (n int) {
 // Write write to client
 func (c *Cipher) Write(p []byte) (n int, err error) {
 	if c.Enc == nil {
-		salt := bufferpool.Get(c.Info.getSaltLen())
+		salt := bufferpool.Get(c.Info.getSaltSize())
 		defer bufferpool.Put(salt)
 
 		c.Enc, err = c.getEncryptAEAD(salt)
@@ -197,9 +197,9 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 		c.wnonce = make([]byte, c.Enc.NonceSize())
 	}
 
-	length := len(p)
+	size := len(p)
 
-	buf := bufferpool.Get(c.Enc.Overhead() + 2 + length + c.Enc.Overhead())
+	buf := bufferpool.Get(c.Enc.Overhead() + 2 + size + c.Enc.Overhead())
 	defer bufferpool.Put(buf)
 
 	n = c.encrypt(buf, p)
@@ -209,7 +209,7 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 		return 0, errors.Wrapf(err, "write short: %d/%d", nw, n)
 	}
 
-	return length, nil
+	return size, nil
 }
 
 func increment(b []byte) {

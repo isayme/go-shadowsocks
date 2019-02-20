@@ -8,8 +8,8 @@ import (
 )
 
 // KDF generate key from password
-func KDF(password string, length int) []byte {
-	count := int(math.Ceil(float64(length) / float64(md5.Size)))
+func KDF(password string, size int) []byte {
+	count := int(math.Ceil(float64(size) / float64(md5.Size)))
 
 	r := bufferpool.Get(count * md5.Size)
 	defer bufferpool.Put(r)
@@ -27,8 +27,8 @@ func KDF(password string, length int) []byte {
 		copy(r[start:start+md5.Size], MD5(d))
 	}
 
-	key := make([]byte, length)
-	copy(key, r[:length])
+	key := make([]byte, size)
+	copy(key, r[:size])
 
 	return key
 }

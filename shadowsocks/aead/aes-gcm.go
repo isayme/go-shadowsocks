@@ -5,8 +5,8 @@ import (
 	"crypto/cipher"
 )
 
-func newAESGCMEncryptAEAD(key, salt []byte, keyLen int) (cipher.AEAD, error) {
-	subkey := make([]byte, keyLen)
+func newAESGCMEncryptAEAD(key, salt []byte, keySize int) (cipher.AEAD, error) {
+	subkey := make([]byte, keySize)
 	hkdfSHA1(key, salt, hkdfInfo, subkey)
 
 	block, err := aes.NewCipher(subkey)
