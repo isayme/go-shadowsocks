@@ -33,3 +33,26 @@ func NewKey(method, password string) []byte {
 	keySize := cipher.KeySize()
 	return util.KDF(password, keySize)
 }
+
+type CipherConn struct {
+	net.Conn
+	cipher Cipher
+}
+
+// NewCipherConn create remote instance
+func NewCipherConn(conn net.Conn, c Cipher) *CipherConn {
+	return &CipherConn{
+		Conn:   conn,
+		cipher: c,
+	}
+}
+
+// Read read from remote
+func (conn *CipherConn) Read(p []byte) (n int, err error) {
+	return conn.cipher.Read(p)
+}
+
+// Write write to conn
+func (conn *CipherConn) Write(p []byte) (n int, err error) {
+	return conn.cipher.Write(p)
+}

@@ -12,17 +12,22 @@ type Config struct {
 	Server     string `json:"server"`
 	ServerPort int    `json:"server_port"`
 
+	LocalAddress string `json:"local_address"`
+	LocalPort    int    `json:"local_port"`
+
 	Timeout int `json:"timeout"` // in seconds
 
 	LogLevel string `json:"log_level"`
 }
 
 var globalConfig = Config{
-	Method:     defaultMethod,
-	Server:     defaultServer,
-	ServerPort: defaultPort,
-	Timeout:    defaultTimeout,
-	LogLevel:   defaultLogLevel,
+	Method:       defaultMethod,
+	Server:       defaultServer,
+	ServerPort:   defaultPort,
+	LocalAddress: defaultLocalAddress,
+	LocalPort:    defaultLocalPort,
+	Timeout:      defaultTimeout,
+	LogLevel:     defaultLogLevel,
 }
 
 // Get parse config
