@@ -7,7 +7,7 @@ func MD5(datas ...[]byte) []byte {
 	h := md5.New()
 
 	for _, data := range datas {
-		h.Write(data)
+		_, _ = h.Write(data)
 	}
 	return h.Sum(nil)
 }

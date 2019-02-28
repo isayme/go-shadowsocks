@@ -31,8 +31,7 @@ type Cipher struct {
 
 	buffer *bytes.Buffer
 
-	key   []byte
-	nonce []byte
+	key []byte
 
 	Info *cipherInfo
 }

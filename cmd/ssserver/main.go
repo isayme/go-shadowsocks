@@ -1,22 +1,23 @@
 package main
 
 import (
-	"crypto/rand"
 	"flag"
 	"fmt"
-	"io"
 	"net"
 	"os"
 	"time"
 
-	"github.com/isayme/go-logger"
-	"github.com/isayme/go-shadowsocks/cmd/ssserver/connection"
-	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
+	"encoding/binary"
+	"io"
+
+	logger "github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/shadowsocks/util"
 	"github.com/panjf2000/ants"
 	"github.com/pkg/errors"
+
+	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 )
 
 var showHelp = flag.Bool("h", false, "show help")
@@ -39,7 +40,7 @@ func main() {
 
 	config := conf.Get()
 
-	logger.SetLevel(config.LogLevel)
+	_ = logger.SetLevel(config.LogLevel)
 
 	address := fmt.Sprintf("%s:%d", config.Server, config.ServerPort)
 	listener, err := net.Listen("tcp", address)
@@ -50,6 +51,7 @@ func main() {
 	logger.Infow("start listening", "address", address, "method", config.Method)
 
 	key := cipher.NewKey(config.Method, config.Password)
+	timeout := time.Second * time.Duration(config.Timeout)
 
 	for {
 		conn, err := listener.Accept()
@@ -61,42 +63,33 @@ func main() {
 		c := cipher.NewCipher(config.Method)
 		c.Init(key, conn)
 
-		ants.Submit(func() error {
-			handleConnection(conn, c, config.Timeout)
+		err = ants.Submit(func() error {
+			handleConnection(conn, c, timeout)
 			return nil
 		})
+		if err != nil {
+			logger.Errorf("ants.Submit fail: %s", err)
+			conn.Close()
+		}
 	}
 }
 
-const handleshakeTimeout = 5 // second
-
-func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
+func handleConnection(conn net.Conn, c cipher.Cipher, timeout time.Duration) {
 	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
 
-	client, err := connection.NewClient(conn, c)
-	if err != nil {
-		logger.Errorf("NewClient fail, err: %+v", err)
-		return
-	}
+	client := cipher.NewCipherConn(util.NewTimeoutConn(conn, timeout), c)
 	defer client.Close()
 
 	// read address type
-	address, err := client.ReadAddress(handleshakeTimeout) // 5s timeout for address
+	address, err := readAddress(client)
 	if err != nil {
 		logger.Errorw("read address fail", "err", err, "remoteAddr", conn.RemoteAddr().String())
-
-		// random response
-		buf := bufferpool.Get(16)
-		defer bufferpool.Put(buf)
-		io.ReadFull(rand.Reader, buf)
-		client.Write(buf)
-
 		return
 	}
 
 	logger.Infof("connecting remote [%s]", address)
 	// dial with timeout
-	remote, err := net.DialTimeout("tcp", address, handleshakeTimeout*time.Second)
+	remote, err := net.DialTimeout("tcp", address, timeout)
 	if err != nil {
 		logger.Warnf("dial remote [%s] failed, err: %+v", address, err)
 		return
@@ -105,13 +98,53 @@ func handleConnection(conn net.Conn, c cipher.Cipher, timeout int) {
 
 	logger.Debugf("connect remote [%s] success", address)
 
-	connection := connection.Connection{
-		Client:  client,
-		Remote:  connection.NewRemote(remote, address),
-		Timeout: timeout,
-	}
-
-	connection.Serve()
+	util.Proxy(client, util.NewTimeoutConn(remote, timeout))
 
 	logger.Debugf("connection [%s] closed", address)
+}
+
+func readAddress(r io.Reader) (string, error) {
+	data := bufferpool.Get(256)
+	defer bufferpool.Put(data)
+
+	if _, err := io.ReadFull(r, data[:1]); err != nil {
+		return "", errors.Wrap(err, "read type")
+	}
+
+	typ := data[0]
+	logger.Debugf("address type: %02x", typ)
+
+	var host string
+	switch typ {
+	case util.AddressTypeIPV4:
+		if _, err := io.ReadFull(r, data[:net.IPv4len]); err != nil {
+			return "", errors.Wrap(err, "read ipv4")
+		}
+		host = net.IP(data[:net.IPv4len]).String()
+	case util.AddressTypeDomain:
+		if _, err := io.ReadFull(r, data[:1]); err != nil {
+			return "", errors.Wrap(err, "read domain length")
+		}
+		domainLen := int(data[0])
+
+		if _, err := io.ReadFull(r, data[:domainLen]); err != nil {
+			return "", errors.Wrap(err, "read domain")
+		}
+		host = string(data[:domainLen])
+	case util.AddressTypeIPV6:
+		if _, err := io.ReadFull(r, data[:net.IPv6len]); err != nil {
+			return "", errors.Wrap(err, "read ipv6")
+		}
+		host = net.IP(data[:net.IPv6len]).String()
+	default:
+		return "", errors.Errorf("invalid address type: %02x", typ)
+	}
+
+	if _, err := io.ReadFull(r, data[:2]); err != nil {
+		return "", errors.Wrap(err, "read port")
+	}
+
+	port := binary.BigEndian.Uint16(data)
+
+	return fmt.Sprintf("%s:%d", host, port), nil
 }
