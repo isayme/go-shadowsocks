@@ -13,7 +13,11 @@ A fast and memory efficient shadowsocks server in Go.
 - bf-cfb
 
 ## Dev
-> CONF_FILE_PATH=go /path/to/config.json run cmd/ssserver/main.go
+### ssserver
+> CONF_FILE_PATH=/path/to/config.json go run cmd/ssserver/main.go
+
+### sslocal
+> CONF_FILE_PATH=/path/to/config.json go run cmd/sslocal/main.go
 
 ## Docker
 > docker pull isayme/shadowsocks:latest
