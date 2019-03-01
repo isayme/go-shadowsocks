@@ -55,10 +55,10 @@ func main() {
 			continue
 		}
 
-		c := cipher.NewCipher(config.Method)
+		cipher := cipher.NewCipher(config.Method)
 
 		err = ants.Submit(func() error {
-			handleConnection(conn, c, key, config.Server, config.ServerPort, timeout)
+			handleConnection(conn, cipher, key, config.Server, config.ServerPort, timeout)
 			return nil
 		})
 		if err != nil {
@@ -68,12 +68,13 @@ func main() {
 	}
 }
 
-func handleConnection(conn net.Conn, c cipher.Cipher, key []byte, server string, serverPort int, timeout time.Duration) {
-	defer conn.Close()
+func handleConnection(conn net.Conn, cipher cipher.Cipher, key []byte, server string, serverPort int, timeout time.Duration) {
+	client := util.NewTimeoutConn(conn, timeout)
+	defer client.Close()
 
-	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
+	logger.Debugf("new connection from: %s", client.RemoteAddr().String())
 
-	request, err := socks5.NewRequest(conn)
+	request, err := socks5.NewRequest(client)
 	if err != nil {
 		logger.Errorf("NewRequest fail, err: %s", err)
 		return
@@ -85,19 +86,16 @@ func handleConnection(conn net.Conn, c cipher.Cipher, key []byte, server string,
 		logger.Errorf("dial ssserver fail, err: %s", err)
 		return
 	}
-	defer ssconn.Close()
-	c.Init(key, ssconn)
+	cipher.Init(key, util.NewTimeoutConn(ssconn, timeout))
+	defer cipher.Close()
 
-	client := util.NewTimeoutConn(conn, timeout)
-	remote := cipher.NewCipherConn(util.NewTimeoutConn(ssconn, timeout), c)
-
-	_, err = remote.Write(request.RawAddr)
+	_, err = cipher.Write(request.RawAddr)
 	if err != nil {
 		logger.Errorf("write address fail, err: %s", err)
 		return
 	}
 
-	util.Proxy(client, remote)
+	util.Proxy(client, cipher)
 
 	logger.Debugf("connection [%s] closed", request.RemoteAddress())
 }

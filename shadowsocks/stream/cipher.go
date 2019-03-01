@@ -23,8 +23,9 @@ type cipherInfo struct {
 
 // Cipher cipher
 type Cipher struct {
+	net.Conn
+
 	Method string
-	Conn   net.Conn
 
 	Enc cipher.Stream
 	Dec cipher.Stream

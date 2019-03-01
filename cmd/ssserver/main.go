@@ -60,11 +60,10 @@ func main() {
 			continue
 		}
 
-		c := cipher.NewCipher(config.Method)
-		c.Init(key, conn)
+		cipher := cipher.NewCipher(config.Method)
 
 		err = ants.Submit(func() error {
-			handleConnection(conn, c, timeout)
+			handleConnection(conn, cipher, key, timeout)
 			return nil
 		})
 		if err != nil {
@@ -74,14 +73,15 @@ func main() {
 	}
 }
 
-func handleConnection(conn net.Conn, c cipher.Cipher, timeout time.Duration) {
-	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
+func handleConnection(conn net.Conn, cipher cipher.Cipher, key []byte, timeout time.Duration) {
+	conn = util.NewTimeoutConn(conn, timeout)
+	defer cipher.Close()
 
-	client := cipher.NewCipherConn(util.NewTimeoutConn(conn, timeout), c)
-	defer client.Close()
+	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
+	cipher.Init(key, conn)
 
 	// read address type
-	address, err := readAddress(client)
+	address, err := readAddress(cipher)
 	if err != nil {
 		logger.Errorw("read address fail", "err", err, "remoteAddr", conn.RemoteAddr().String())
 		return
@@ -94,11 +94,12 @@ func handleConnection(conn net.Conn, c cipher.Cipher, timeout time.Duration) {
 		logger.Warnf("dial remote [%s] failed, err: %+v", address, err)
 		return
 	}
+	remote = util.NewTimeoutConn(remote, timeout)
 	defer remote.Close()
 
 	logger.Debugf("connect remote [%s] success", address)
 
-	util.Proxy(client, util.NewTimeoutConn(remote, timeout))
+	util.Proxy(cipher, remote)
 
 	logger.Debugf("connection [%s] closed", address)
 }

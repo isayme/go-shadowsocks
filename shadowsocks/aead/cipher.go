@@ -27,8 +27,9 @@ func (ci *cipherInfo) getSaltSize() int {
 
 // Cipher cipher
 type Cipher struct {
+	net.Conn
+
 	Method string
-	Conn   net.Conn
 
 	Enc cipher.AEAD
 	Dec cipher.AEAD
