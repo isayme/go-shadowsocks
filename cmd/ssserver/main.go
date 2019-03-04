@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"encoding/binary"
@@ -42,7 +42,7 @@ func main() {
 
 	_ = logger.SetLevel(config.LogLevel)
 
-	address := fmt.Sprintf("%s:%d", config.Server, config.ServerPort)
+	address := net.JoinHostPort(config.Server, strconv.Itoa(config.ServerPort))
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		logger.Panic(errors.Wrap(err, "net.Listen"))
@@ -87,21 +87,21 @@ func handleConnection(conn net.Conn, cipher cipher.Cipher, key []byte, timeout t
 		return
 	}
 
-	logger.Infof("connecting remote [%s]", address)
+	logger.Infof("connecting remote '%s'", address)
 	// dial with timeout
 	remote, err := net.DialTimeout("tcp", address, timeout)
 	if err != nil {
-		logger.Warnf("dial remote [%s] failed, err: %+v", address, err)
+		logger.Warnf("dial remote '%s' failed, err: %+v", address, err)
 		return
 	}
 	remote = util.NewTimeoutConn(remote, timeout)
 	defer remote.Close()
 
-	logger.Debugf("connect remote [%s] success", address)
+	logger.Debugf("connect remote '%s' success", address)
 
 	util.Proxy(cipher, remote)
 
-	logger.Debugf("connection [%s] closed", address)
+	logger.Debugf("connection '%s' closed", address)
 }
 
 func readAddress(r io.Reader) (string, error) {
@@ -147,5 +147,5 @@ func readAddress(r io.Reader) (string, error) {
 
 	port := binary.BigEndian.Uint16(data)
 
-	return fmt.Sprintf("%s:%d", host, port), nil
+	return net.JoinHostPort(host, strconv.Itoa(int(port))), nil
 }

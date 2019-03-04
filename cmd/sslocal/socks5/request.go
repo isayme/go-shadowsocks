@@ -2,9 +2,9 @@ package socks5
 
 import (
 	"encoding/binary"
-	"fmt"
 	"io"
 	"net"
+	"strconv"
 
 	"github.com/isayme/go-shadowsocks/shadowsocks/util"
 	"github.com/pkg/errors"
@@ -110,31 +110,46 @@ func (r *Request) negotiate() error {
 		domainLen := buf[0]
 		reply = append(reply, buf[0])
 
-		_, err = io.ReadFull(r.client, buf[:domainLen+2])
+		_, err = io.ReadFull(r.client, buf[:domainLen])
 		if err != nil {
-			return errors.Errorf("read adrress fail: %s", err)
+			return errors.Errorf("read domain fail: %s", err)
 		}
-		reply = append(reply, buf[:domainLen+2]...)
+		reply = append(reply, buf[:domainLen]...)
 
 		domain := string(buf[:domainLen])
-		port := binary.BigEndian.Uint16(buf[domainLen : domainLen+2])
-		r.addr = fmt.Sprintf("%s:%d", domain, port)
+		r.addr = domain
 	case AddressTypeIPV4:
-		_, err = io.ReadFull(r.client, buf[:6])
+		_, err = io.ReadFull(r.client, buf[:net.IPv4len])
 		if err != nil {
-			return errors.Errorf("read adrress fail: %s", err)
+			return errors.Errorf("read ipv4 fail: %s", err)
 		}
 
-		reply = append(reply, buf[:6]...)
+		reply = append(reply, buf[:net.IPv4len]...)
 
-		ip := net.IPv4(buf[0], buf[1], buf[2], buf[3])
-		port := binary.BigEndian.Uint16(buf[4:6])
+		ip := net.IP(buf[:net.IPv4len])
+		r.addr = ip.String()
+	case AddressTypeIPV6:
+		_, err = io.ReadFull(r.client, buf[:net.IPv6len])
+		if err != nil {
+			return errors.Errorf("read ipv6 fail: %s", err)
+		}
 
-		r.addr = fmt.Sprintf("%s:%d", ip.String(), port)
-	// case AddressTypeIPV6:
+		reply = append(reply, buf[:net.IPv6len]...)
+
+		ip := net.IP(buf[:net.IPv6len])
+		r.addr = ip.String()
 	default:
 		return errors.Errorf("not support adrress type: %d", r.atyp)
 	}
+
+	_, err = io.ReadFull(r.client, buf[:2])
+	if err != nil {
+		return errors.Errorf("read port fail: %s", err)
+	}
+	reply = append(reply, buf[:2]...)
+	port := binary.BigEndian.Uint16(buf[:2])
+
+	r.addr = net.JoinHostPort(r.addr, strconv.Itoa(int(port)))
 
 	r.RawAddr = reply[3:]
 	_, err = r.client.Write(reply)

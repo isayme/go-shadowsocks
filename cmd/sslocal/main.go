@@ -2,9 +2,9 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"time"
 
 	logger "github.com/isayme/go-logger"
@@ -38,7 +38,7 @@ func main() {
 
 	_ = logger.SetLevel(config.LogLevel)
 
-	address := fmt.Sprintf("%s:%d", config.LocalAddress, config.LocalPort)
+	address := net.JoinHostPort(config.LocalAddress, strconv.Itoa(config.LocalPort))
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		logger.Panic(errors.Wrap(err, "net.Listen"))
@@ -80,7 +80,7 @@ func handleConnection(conn net.Conn, cipher cipher.Cipher, key []byte, server st
 		return
 	}
 
-	address := fmt.Sprintf("%s:%d", server, serverPort)
+	address := net.JoinHostPort(server, strconv.Itoa(int(serverPort)))
 	ssconn, err := net.DialTimeout("tcp", address, 5*time.Second)
 	if err != nil {
 		logger.Errorf("dial ssserver fail, err: %s", err)
@@ -97,5 +97,5 @@ func handleConnection(conn net.Conn, cipher cipher.Cipher, key []byte, server st
 
 	util.Proxy(client, cipher)
 
-	logger.Debugf("connection [%s] closed", request.RemoteAddress())
+	logger.Debugf("connection '%s' closed", request.RemoteAddress())
 }
