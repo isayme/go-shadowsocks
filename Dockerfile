@@ -1,11 +1,34 @@
+FROM golang:1.15.3-alpine as builder
+WORKDIR /app
+
+ARG APP_NAME
+ENV APP_NAME ${APP_NAME}
+ARG APP_VERSION
+ENV APP_VERSION ${APP_VERSION}
+
+COPY . .
+RUN mkdir -p ./dist  \
+  && GO111MODULE=on GOPROXY=https://goproxy.io,direct go mod download \
+  && go build -ldflags "-X github.com/isayme/go-shadowsocks/shadowsocks/util.Name=${APP_NAME} \
+  -X github.com/isayme/go-shadowsocks/shadowsocks/util.Version=${APP_VERSION}" \
+  -o ./dist/ssserver cmd/ssserver/main.go \
+  && go build -ldflags "-X github.com/isayme/go-shadowsocks/shadowsocks/util.Name=${APP_NAME} \
+  -X github.com/isayme/go-shadowsocks/shadowsocks/util.Version=${APP_VERSION}" \
+  -o ./dist/sslocal cmd/sslocal/main.go
+
 FROM alpine
 WORKDIR /app
+
+ARG APP_NAME
+ENV APP_NAME ${APP_NAME}
+ARG APP_VERSION
+ENV APP_VERSION ${APP_VERSION}
 
 # default config file
 ENV CONF_FILE_PATH=/etc/shadowsocks.json
 
 COPY config/config.default.json /etc/shadowsocks.json
-COPY ./dist/ssserver /app/ssserver
-COPY ./dist/sslocal /app/sslocal
+COPY --from=builder /app/dist/ssserver /app/ssserver
+COPY --from=builder /app/dist/sslocal /app/sslocal
 
 CMD ["/app/ssserver"]
