@@ -1,9 +1,7 @@
-package main
+package server
 
 import (
-	"flag"
 	"net"
-	"os"
 	"strconv"
 	"time"
 
@@ -20,23 +18,8 @@ import (
 	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
 )
 
-var showHelp = flag.Bool("h", false, "show help")
-var showVersion = flag.Bool("v", false, "show version")
-
-func main() {
+func Run() {
 	defer ants.Release()
-
-	flag.Parse()
-
-	if *showHelp {
-		flag.Usage()
-		os.Exit(0)
-	}
-
-	if *showVersion {
-		util.PrintVersion()
-		os.Exit(0)
-	}
 
 	config := conf.Get()
 

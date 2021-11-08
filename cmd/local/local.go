@@ -1,14 +1,12 @@
-package main
+package local
 
 import (
-	"flag"
 	"net"
-	"os"
 	"strconv"
 	"time"
 
 	logger "github.com/isayme/go-logger"
-	"github.com/isayme/go-shadowsocks/cmd/sslocal/socks5"
+	"github.com/isayme/go-shadowsocks/cmd/local/socks5"
 	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
 	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/shadowsocks/util"
@@ -16,23 +14,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-var showHelp = flag.Bool("h", false, "show help")
-var showVersion = flag.Bool("v", false, "show version")
-
-func main() {
+func Run() {
 	defer ants.Release()
-
-	flag.Parse()
-
-	if *showHelp {
-		flag.Usage()
-		os.Exit(0)
-	}
-
-	if *showVersion {
-		util.PrintVersion()
-		os.Exit(0)
-	}
 
 	config := conf.Get()
 
