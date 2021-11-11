@@ -22,20 +22,12 @@ A fast and memory efficient shadowsocks server in Go.
 
 ### ssserver
 
-> CONF_FILE_PATH=/path/to/config.json go run cmd/ssserver/main.go
+> CONF_FILE_PATH=/path/to/config.json go run main.go server
 
 ### sslocal
 
-> CONF_FILE_PATH=/path/to/config.json go run cmd/sslocal/main.go
+> CONF_FILE_PATH=/path/to/config.json go run main.go local
 
 ## Docker
 
 > docker pull isayme/shadowsocks:latest
-
-### Image
-
-> make image
-
-### Pubulish Tag
-
-> make publish
