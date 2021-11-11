@@ -23,8 +23,6 @@ type cipherInfo struct {
 
 // Cipher cipher
 type Cipher struct {
-	net.Conn
-
 	Method string
 
 	Enc cipher.Stream
@@ -38,9 +36,10 @@ type Cipher struct {
 }
 
 // NewCipher create cipher
-func NewCipher(method string) *Cipher {
+func NewCipher(method string, key []byte) *Cipher {
 	c := &Cipher{}
 	c.Method = method
+	c.key = key
 
 	Info, ok := cipherMethods[method]
 	if !ok {
@@ -52,12 +51,6 @@ func NewCipher(method string) *Cipher {
 	c.buffer = bytes.NewBuffer(nil)
 
 	return c
-}
-
-// Init set key and conn
-func (c *Cipher) Init(key []byte, conn net.Conn) {
-	c.key = key
-	c.Conn = conn
 }
 
 // KeySize return key size
@@ -94,12 +87,12 @@ func (c *Cipher) encrypt(dst, src []byte) {
 }
 
 // Read read from client
-func (c *Cipher) Read(p []byte) (n int, err error) {
+func (c *Cipher) Read(conn net.Conn, p []byte) (n int, err error) {
 	if c.Dec == nil {
 		iv := bufferpool.Get(c.Info.IvSize)
 		defer bufferpool.Put(iv)
 
-		if _, err = io.ReadFull(c.Conn, iv); err != nil {
+		if _, err = io.ReadFull(conn, iv); err != nil {
 			return 0, err
 		}
 
@@ -111,13 +104,13 @@ func (c *Cipher) Read(p []byte) (n int, err error) {
 		c.Dec = s
 	}
 
-	n, err = c.Conn.Read(p)
+	n, err = conn.Read(p)
 	c.decrypt(p, p[0:n])
 	return n, err
 }
 
 // Write write to client
-func (c *Cipher) Write(p []byte) (n int, err error) {
+func (c *Cipher) Write(conn net.Conn, p []byte) (n int, err error) {
 	if c.Enc == nil {
 		iv := bufferpool.Get(c.Info.IvSize)
 		defer bufferpool.Put(iv)
@@ -127,7 +120,7 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 			return 0, err
 		}
 
-		nw, err := c.Conn.Write(iv)
+		nw, err := conn.Write(iv)
 		if err != nil {
 			return 0, errors.Wrap(err, "iv write")
 		}
@@ -137,5 +130,5 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 	}
 
 	c.encrypt(p, p)
-	return c.Conn.Write(p)
+	return conn.Write(p)
 }

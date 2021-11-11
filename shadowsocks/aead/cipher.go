@@ -27,8 +27,6 @@ func (ci *cipherInfo) getSaltSize() int {
 
 // Cipher cipher
 type Cipher struct {
-	net.Conn
-
 	Method string
 
 	Enc cipher.AEAD
@@ -45,9 +43,10 @@ type Cipher struct {
 }
 
 // NewCipher create aead cipher
-func NewCipher(method string) *Cipher {
+func NewCipher(method string, key []byte) *Cipher {
 	c := &Cipher{}
 	c.Method = method
+	c.key = key
 
 	info, ok := cipherMethods[method]
 	if !ok {
@@ -59,12 +58,6 @@ func NewCipher(method string) *Cipher {
 	c.buffer = bytes.NewBuffer(nil)
 
 	return c
-}
-
-// Init set key and conn
-func (c *Cipher) Init(key []byte, conn net.Conn) {
-	c.key = key
-	c.Conn = conn
 }
 
 // KeySize return key size
@@ -90,12 +83,12 @@ func (c *Cipher) getDecryptAEAD(salt []byte) (cipher.AEAD, error) {
 	return c.Info.genDecryptAEAD(c.key, salt, c.Info.KeySize)
 }
 
-func (c *Cipher) read() error {
+func (c *Cipher) read(conn net.Conn) error {
 	// read size
 	sizeBuf := bufferpool.Get(c.Dec.Overhead() + 2)
 	defer bufferpool.Put(sizeBuf)
 
-	_, err := io.ReadFull(c.Conn, sizeBuf)
+	_, err := io.ReadFull(conn, sizeBuf)
 	if err != nil {
 		return errors.Wrap(err, "aead read size")
 	}
@@ -111,7 +104,7 @@ func (c *Cipher) read() error {
 	payloadBuf := bufferpool.Get(payloadSize)
 	defer bufferpool.Put(payloadBuf)
 
-	_, err = io.ReadFull(c.Conn, payloadBuf)
+	_, err = io.ReadFull(conn, payloadBuf)
 	if err != nil {
 		return errors.Wrap(err, "aead read payload")
 	}
@@ -127,12 +120,12 @@ func (c *Cipher) read() error {
 }
 
 // Read read from client
-func (c *Cipher) Read(p []byte) (n int, err error) {
+func (c *Cipher) Read(conn net.Conn, p []byte) (n int, err error) {
 	if c.Dec == nil {
 		salt := bufferpool.Get(c.Info.getSaltSize())
 		defer bufferpool.Put(salt)
 
-		if _, err = io.ReadFull(c.Conn, salt); err != nil {
+		if _, err = io.ReadFull(conn, salt); err != nil {
 			return 0, err
 		}
 
@@ -151,7 +144,7 @@ func (c *Cipher) Read(p []byte) (n int, err error) {
 		return c.buffer.Read(p)
 	}
 
-	err = c.read()
+	err = c.read(conn)
 	if err != nil {
 		return 0, err
 	}
@@ -176,7 +169,7 @@ func (c *Cipher) encrypt(dst, src []byte) (n int) {
 }
 
 // Write write to client
-func (c *Cipher) Write(p []byte) (n int, err error) {
+func (c *Cipher) Write(conn net.Conn, p []byte) (n int, err error) {
 	if c.Enc == nil {
 		salt := bufferpool.Get(c.Info.getSaltSize())
 		defer bufferpool.Put(salt)
@@ -186,7 +179,7 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 			return 0, err
 		}
 
-		nw, err := c.Conn.Write(salt)
+		nw, err := conn.Write(salt)
 		if err != nil {
 			return 0, errors.Wrap(err, "salt write")
 		}
@@ -205,7 +198,7 @@ func (c *Cipher) Write(p []byte) (n int, err error) {
 
 	n = c.encrypt(buf, p)
 
-	nw, err := c.Conn.Write(buf[:n])
+	nw, err := conn.Write(buf[:n])
 	if err != nil {
 		return 0, errors.Wrapf(err, "write short: %d/%d", nw, n)
 	}
