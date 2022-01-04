@@ -4,7 +4,7 @@ import (
 	"crypto/md5"
 	"math"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
+	"github.com/isayme/go-bufferpool"
 )
 
 // KDF generate key from password

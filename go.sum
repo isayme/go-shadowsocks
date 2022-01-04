@@ -163,6 +163,8 @@ github.com/ianlancetaylor/demangle v0.0.0-20181102032728-5e5cf60278f6/go.mod h1:
 github.com/ianlancetaylor/demangle v0.0.0-20200824232613-28f6c0f3b639/go.mod h1:aSSvb/t6k1mPoxDqO4vJh6VOCGPwU4O0C2/Eqndh1Sc=
 github.com/inconshreveable/mousetrap v1.0.0 h1:Z8tu5sraLXCXIcARxBp/8cbvlwVa7Z1NHg9XEKhtSvM=
 github.com/inconshreveable/mousetrap v1.0.0/go.mod h1:PxqpIevigyE2G7u3NXJIT2ANytuPF1OarO4DADm73n8=
+github.com/isayme/go-bufferpool v0.1.0 h1:lKprqfo0wJIFOIJN4t0Kl0mxIJ76zFXmok3pKesPw+w=
+github.com/isayme/go-bufferpool v0.1.0/go.mod h1:5VjizpyxN7bq1sqWOzTAaGIC5jZXdUfzclzx1pAbzxo=
 github.com/isayme/go-config v0.0.0-20190209132515-066212c0ce1b h1:zsJ35FFH7itHUlgW7m62YwRqoAif815ZWywxBdg2cyA=
 github.com/isayme/go-config v0.0.0-20190209132515-066212c0ce1b/go.mod h1:gCBIBrmj+N81NzvevhA/FGMY9jUR+WpvwuS3mP5fmC4=
 github.com/isayme/go-logger v0.1.0 h1:COzyNtpOKo4+t5udyu5Q2vibjbLmSWG06h0SVvtTgiM=

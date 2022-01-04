@@ -4,7 +4,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/bufferpool"
+	"github.com/isayme/go-bufferpool"
 )
 
 var bufSize = os.Getpagesize()
