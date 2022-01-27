@@ -18,16 +18,39 @@ A fast and memory efficient shadowsocks server in Go.
 - cast5-cfb
 - bf-cfb
 
-## Dev
+## Docker Compose
 
-### ssserver
+### server
+```
+version: '3'
 
-> CONF_FILE_PATH=/path/to/config.json go run main.go server
+services:
+  ss-server:
+    container_name: ss-server
+    image: isayme/shadowsocks:latest
+    volumes:
+      # config file
+      - ./config/shadowsocks/shadowsocks.json:/shadowsocks/shadowsocks.json
+    environment:
+      - CONF_FILE_PATH=/shadowsocks/shadowsocks.json
+    restart: unless-stopped
+```
 
-### sslocal
+### local
+```
+version: '3'
 
-> CONF_FILE_PATH=/path/to/config.json go run main.go local
-
-## Docker
-
-> docker pull isayme/shadowsocks:latest
+services:
+  ss-local:
+    container_name: ss-local
+    image: isayme/shadowsocks:latest
+    ports:
+      # expose socks5 port
+      - "1080:1080"
+    volumes:
+      - ./config/shadowsocks/shadowsocks.json:/shadowsocks/shadowsocks.json
+    environment:
+      - CONF_FILE_PATH=/shadowsocks/shadowsocks.json
+    command: /app/ssserver local
+    restart: unless-stopped
+```
