@@ -28,6 +28,9 @@ services:
   ss-server:
     container_name: ss-server
     image: isayme/shadowsocks:latest
+    ports:
+      # expose ss port
+      - "8388:8388"
     volumes:
       # config file
       - ./config/shadowsocks/shadowsocks.json:/shadowsocks/shadowsocks.json
