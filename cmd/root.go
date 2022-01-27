@@ -12,6 +12,8 @@ var versionFlag bool
 
 func init() {
 	rootCmd.Flags().BoolVarP(&versionFlag, "version", "v", false, "wstunnel version")
+	rootCmd.AddCommand(serverCmd)
+	rootCmd.AddCommand(localCmd)
 }
 
 var rootCmd = &cobra.Command{
@@ -21,6 +23,22 @@ var rootCmd = &cobra.Command{
 			util.PrintVersion()
 			os.Exit(0)
 		}
+	},
+}
+
+var serverCmd = &cobra.Command{
+	Use:   "server",
+	Short: "shadowsocks server",
+	Run: func(cmd *cobra.Command, args []string) {
+		runServer()
+	},
+}
+
+var localCmd = &cobra.Command{
+	Use:   "local",
+	Short: "shadowsocks local",
+	Run: func(cmd *cobra.Command, args []string) {
+		runLocal()
 	},
 }
 

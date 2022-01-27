@@ -1,17 +1,17 @@
 package stream
 
-var cipherMethods = map[string]*cipherInfo{
-	"aes-128-cfb":   &cipherInfo{16, 16, newAESCFBEncryptStream, newAESCFBDecryptStream},
-	"aes-192-cfb":   &cipherInfo{24, 16, newAESCFBEncryptStream, newAESCFBDecryptStream},
-	"aes-256-cfb":   &cipherInfo{32, 16, newAESCFBEncryptStream, newAESCFBDecryptStream},
-	"aes-128-ctr":   &cipherInfo{16, 16, newAESCTRStream, newAESCTRStream},
-	"aes-192-ctr":   &cipherInfo{24, 16, newAESCTRStream, newAESCTRStream},
-	"aes-256-ctr":   &cipherInfo{32, 16, newAESCTRStream, newAESCTRStream},
-	"des-cfb":       &cipherInfo{8, 8, newDESCFBEncryptStream, newDESCFBDecryptStream},
-	"rc4-md5":       &cipherInfo{16, 16, newRC4MD5Stream, newRC4MD5Stream},
-	"rc4-md5-6":     &cipherInfo{16, 6, newRC4MD5Stream, newRC4MD5Stream},
-	"chacha20":      &cipherInfo{32, 8, newChaCha20Stream, newChaCha20Stream},
-	"chacha20-ietf": &cipherInfo{32, 12, newChaCha20Stream, newChaCha20Stream},
-	"cast5-cfb":     &cipherInfo{16, 8, newCast5EncryptStream, newCast5DecryptStream},
-	"bf-cfb":        &cipherInfo{16, 8, newBlowfishEncryptStream, newBlowfishDecryptStream},
+var cipherMethods = map[string]cipherInfo{
+	"aes-128-cfb":   newCipherInfo(16, 16, newAesCfbReader, newAesCfbWriter),
+	"aes-192-cfb":   newCipherInfo(24, 16, newAesCfbReader, newAesCfbWriter),
+	"aes-256-cfb":   newCipherInfo(32, 16, newAesCfbReader, newAesCfbWriter),
+	"aes-128-ctr":   newCipherInfo(16, 16, newAesCtrReader, newAesCtrWriter),
+	"aes-192-ctr":   newCipherInfo(24, 16, newAesCtrReader, newAesCtrWriter),
+	"aes-256-ctr":   newCipherInfo(32, 16, newAesCtrReader, newAesCtrWriter),
+	"des-cfb":       newCipherInfo(8, 8, newDESCFBReader, newDESCFBWriter),
+	"rc4-md5":       newCipherInfo(16, 16, newRC4MD5Reader, newRC4MD5Writer),
+	"rc4-md5-6":     newCipherInfo(16, 6, newRC4MD5Reader, newRC4MD5Writer),
+	"chacha20":      newCipherInfo(32, 8, newChaCha20Reader, newChaCha20Writer),
+	"chacha20-ietf": newCipherInfo(32, 12, newChaCha20Reader, newChaCha20Writer),
+	"cast5-cfb":     newCipherInfo(16, 8, newCast5Reader, newCast5Writer),
+	"bf-cfb":        newCipherInfo(16, 8, newBlowfishReader, newBlowfishWriter),
 }

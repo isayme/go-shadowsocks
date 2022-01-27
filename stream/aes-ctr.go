@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 )
 
-func newAESCTRStream(key, iv []byte) (cipher.Stream, error) {
+func newAesCtrReader(key, iv []byte) (cipher.Stream, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -13,3 +13,5 @@ func newAESCTRStream(key, iv []byte) (cipher.Stream, error) {
 
 	return cipher.NewCTR(block, iv), nil
 }
+
+var newAesCtrWriter = newAesCtrReader

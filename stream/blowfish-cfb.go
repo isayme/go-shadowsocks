@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/blowfish"
 )
 
-func newBlowfishEncryptStream(key, iv []byte) (cipher.Stream, error) {
+func newBlowfishWriter(key, iv []byte) (cipher.Stream, error) {
 	block, err := blowfish.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -15,7 +15,7 @@ func newBlowfishEncryptStream(key, iv []byte) (cipher.Stream, error) {
 	return cipher.NewCFBEncrypter(block, iv), nil
 }
 
-func newBlowfishDecryptStream(key, iv []byte) (cipher.Stream, error) {
+func newBlowfishReader(key, iv []byte) (cipher.Stream, error) {
 	block, err := blowfish.NewCipher(key)
 	if err != nil {
 		return nil, err

@@ -6,7 +6,7 @@ import (
 	"golang.org/x/crypto/cast5"
 )
 
-func newCast5EncryptStream(key, iv []byte) (cipher.Stream, error) {
+func newCast5Writer(key, iv []byte) (cipher.Stream, error) {
 	block, err := cast5.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -14,7 +14,7 @@ func newCast5EncryptStream(key, iv []byte) (cipher.Stream, error) {
 	return cipher.NewCFBEncrypter(block, iv), nil
 }
 
-func newCast5DecryptStream(key, iv []byte) (cipher.Stream, error) {
+func newCast5Reader(key, iv []byte) (cipher.Stream, error) {
 	block, err := cast5.NewCipher(key)
 	if err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ import (
 	"crypto/cipher"
 )
 
-func newAESCFBEncryptStream(key, iv []byte) (cipher.Stream, error) {
+func newAesCfbWriter(key, iv []byte) (cipher.Stream, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -14,7 +14,7 @@ func newAESCFBEncryptStream(key, iv []byte) (cipher.Stream, error) {
 	return cipher.NewCFBEncrypter(block, iv), nil
 }
 
-func newAESCFBDecryptStream(key, iv []byte) (cipher.Stream, error) {
+func newAesCfbReader(key, iv []byte) (cipher.Stream, error) {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err

@@ -20,7 +20,7 @@ type Connection struct {
 }
 
 func NewConnection(conn net.Conn, method string, key []byte) Connection {
-	cipher := cipher.NewCipher(method, key)
+	cipher := cipher.NewCipher(conn, method, key)
 
 	return Connection{
 		Conn:   conn,
@@ -29,11 +29,11 @@ func NewConnection(conn net.Conn, method string, key []byte) Connection {
 }
 
 func (c Connection) Read(b []byte) (n int, err error) {
-	return c.cipher.Read(c.Conn, b)
+	return c.cipher.Read(b)
 }
 
 func (c Connection) Write(b []byte) (n int, err error) {
-	return c.cipher.Write(c.Conn, b)
+	return c.cipher.Write(b)
 }
 
 /**

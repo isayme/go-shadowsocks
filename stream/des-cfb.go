@@ -5,7 +5,7 @@ import (
 	"crypto/des"
 )
 
-func newDESCFBEncryptStream(key, iv []byte) (cipher.Stream, error) {
+func newDESCFBWriter(key, iv []byte) (cipher.Stream, error) {
 	block, err := des.NewCipher(key)
 	if err != nil {
 		return nil, err
@@ -14,7 +14,7 @@ func newDESCFBEncryptStream(key, iv []byte) (cipher.Stream, error) {
 	return cipher.NewCFBEncrypter(block, iv), nil
 }
 
-func newDESCFBDecryptStream(key, iv []byte) (cipher.Stream, error) {
+func newDESCFBReader(key, iv []byte) (cipher.Stream, error) {
 	block, err := des.NewCipher(key)
 	if err != nil {
 		return nil, err
