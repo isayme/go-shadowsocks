@@ -9,8 +9,8 @@ ENV APP_VERSION ${APP_VERSION}
 COPY . .
 RUN mkdir -p ./dist  \
   && GO111MODULE=on GOPROXY=https://goproxy.io,direct go mod download \
-  && go build -ldflags "-X github.com/isayme/go-shadowsocks/shadowsocks/util.Name=${APP_NAME} \
-  -X github.com/isayme/go-shadowsocks/shadowsocks/util.Version=${APP_VERSION}" \
+  && go build -ldflags "-X github.com/isayme/go-shadowsocks/util.Name=${APP_NAME} \
+  -X github.com/isayme/go-shadowsocks/util.Version=${APP_VERSION}" \
   -o ./dist/shadowsocks main.go
 
 FROM alpine

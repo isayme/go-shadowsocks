@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/util"
+	"github.com/isayme/go-shadowsocks/util"
 	"github.com/spf13/cobra"
 )
 

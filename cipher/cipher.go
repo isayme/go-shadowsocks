@@ -3,9 +3,9 @@ package cipher
 import (
 	"net"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/aead"
-	"github.com/isayme/go-shadowsocks/shadowsocks/stream"
-	"github.com/isayme/go-shadowsocks/shadowsocks/util"
+	"github.com/isayme/go-shadowsocks/aead"
+	"github.com/isayme/go-shadowsocks/stream"
+	"github.com/isayme/go-shadowsocks/util"
 )
 
 // Cipher cipher interface

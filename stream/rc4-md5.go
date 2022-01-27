@@ -4,7 +4,7 @@ import (
 	"crypto/cipher"
 	"crypto/rc4"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/util"
+	"github.com/isayme/go-shadowsocks/util"
 )
 
 func newRC4MD5Stream(key, iv []byte) (cipher.Stream, error) {

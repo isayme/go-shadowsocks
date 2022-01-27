@@ -6,7 +6,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/isayme/go-shadowsocks/shadowsocks/util"
+	"github.com/isayme/go-shadowsocks/util"
 	"github.com/pkg/errors"
 )
 

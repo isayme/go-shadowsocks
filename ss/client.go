@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/isayme/go-logger"
-	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
-	"github.com/isayme/go-shadowsocks/shadowsocks/socks5"
-	"github.com/isayme/go-shadowsocks/shadowsocks/util"
+	"github.com/isayme/go-shadowsocks/cipher"
+	"github.com/isayme/go-shadowsocks/socks5"
+	"github.com/isayme/go-shadowsocks/util"
 )
 
 type Client struct {

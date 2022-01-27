@@ -9,8 +9,8 @@ import (
 
 	"github.com/isayme/go-bufferpool"
 	"github.com/isayme/go-logger"
-	"github.com/isayme/go-shadowsocks/shadowsocks/cipher"
-	"github.com/isayme/go-shadowsocks/shadowsocks/util"
+	"github.com/isayme/go-shadowsocks/cipher"
+	"github.com/isayme/go-shadowsocks/util"
 	"github.com/pkg/errors"
 )
 

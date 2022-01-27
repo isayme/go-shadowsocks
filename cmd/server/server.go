@@ -6,8 +6,8 @@ import (
 	"time"
 
 	logger "github.com/isayme/go-logger"
-	"github.com/isayme/go-shadowsocks/shadowsocks/conf"
-	"github.com/isayme/go-shadowsocks/shadowsocks/ss"
+	"github.com/isayme/go-shadowsocks/conf"
+	"github.com/isayme/go-shadowsocks/ss"
 	"github.com/panjf2000/ants"
 	"github.com/pkg/errors"
 )
