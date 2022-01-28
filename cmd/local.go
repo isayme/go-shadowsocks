@@ -36,9 +36,8 @@ func runLocal() {
 			continue
 		}
 
-		err = ants.Submit(func() error {
+		err = ants.Submit(func() {
 			client.AcceptAndHandle(conn)
-			return nil
 		})
 		if err != nil {
 			logger.Errorf("ants.Submit fail: %s", err)

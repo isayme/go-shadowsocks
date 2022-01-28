@@ -17,7 +17,7 @@ func Proxy(client, server net.Conn) {
 	// any of remote/client closed, the other one should close with quiet
 	closed := false
 
-	err := ants.Submit(func() error {
+	err := ants.Submit(func() {
 		_, err := Copy(server, client)
 		if err != nil && !closed {
 			if errors.Cause(err) != io.EOF {
@@ -27,8 +27,6 @@ func Proxy(client, server net.Conn) {
 		closed = true
 		server.Close()
 		logger.Debug("client read end")
-
-		return nil
 	})
 	if err != nil {
 		logger.Errorf("ants.Submit fail: %s", err)
