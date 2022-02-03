@@ -36,6 +36,7 @@ services:
       - ./config/shadowsocks/shadowsocks.json:/shadowsocks/shadowsocks.json
     environment:
       - CONF_FILE_PATH=/shadowsocks/shadowsocks.json
+    command: /app/shadowsocks server
     restart: unless-stopped
 ```
 
@@ -54,6 +55,6 @@ services:
       - ./config/shadowsocks/shadowsocks.json:/shadowsocks/shadowsocks.json
     environment:
       - CONF_FILE_PATH=/shadowsocks/shadowsocks.json
-    command: /app/ssserver local
+    command: /app/shadowsocks local
     restart: unless-stopped
 ```
