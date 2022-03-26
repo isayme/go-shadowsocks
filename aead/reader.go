@@ -103,6 +103,7 @@ func (r *aeadReader) Read(p []byte) (n int, err error) {
 		return r.readBuffer.Read(p)
 	}
 
+	r.readBuffer.Reset()
 	if err := r.doRead(); err != nil {
 		return 0, err
 	}
