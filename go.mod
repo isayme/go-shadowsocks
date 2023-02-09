@@ -7,7 +7,7 @@ require (
 	github.com/isayme/go-bufferpool v0.1.0
 	github.com/isayme/go-config v0.1.0
 	github.com/isayme/go-logger v0.3.1
-	github.com/panjf2000/ants v1.3.0
+	github.com/panjf2000/ants v1.2.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.3.0
 	golang.org/x/crypto v0.0.0-20220126234351-aa10faf2a1f8
