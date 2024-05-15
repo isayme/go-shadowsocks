@@ -21,7 +21,7 @@ func NewTimeoutConn(conn net.Conn, timeout time.Duration) *TimeoutConn {
 
 func (c *TimeoutConn) Read(p []byte) (n int, err error) {
 	if c.timeout > 0 {
-		if err := c.Conn.SetReadDeadline(time.Now().Add(c.timeout)); err != nil {
+		if err := c.Conn.SetDeadline(time.Now().Add(c.timeout)); err != nil {
 			return 0, err
 		}
 	}
@@ -31,7 +31,7 @@ func (c *TimeoutConn) Read(p []byte) (n int, err error) {
 
 func (c *TimeoutConn) Write(p []byte) (n int, err error) {
 	if c.timeout > 0 {
-		if err := c.Conn.SetWriteDeadline(time.Now().Add(c.timeout)); err != nil {
+		if err := c.Conn.SetDeadline(time.Now().Add(c.timeout)); err != nil {
 			return 0, err
 		}
 	}
