@@ -1,31 +1,26 @@
 package util
 
 import (
-	"io"
 	"net"
+	"sync"
 
 	"github.com/panjf2000/ants"
 
 	logger "github.com/isayme/go-logger"
-	"github.com/pkg/errors"
 )
 
-func Proxy(client, server net.Conn) {
+func Proxy(client net.Conn, tcpClinet *net.TCPConn, server net.Conn, tcpServer *net.TCPConn) {
 	defer client.Close()
 	defer server.Close()
 
-	// any of remote/client closed, the other one should close with quiet
-	closed := false
+	wg := sync.WaitGroup{}
+	wg.Add(2)
 
 	err := ants.Submit(func() {
-		_, err := Copy(server, client)
-		if err != nil && !closed {
-			if errors.Cause(err) != io.EOF {
-				logger.Errorf("[%s] Copy from client to server fail, err: %s", server.RemoteAddr(), err)
-			}
-		}
-		closed = true
-		server.Close()
+		defer wg.Done()
+
+		Copy(server, client)
+		tcpServer.CloseWrite()
 		logger.Debug("client read end")
 	})
 	if err != nil {
@@ -33,13 +28,18 @@ func Proxy(client, server net.Conn) {
 		return
 	}
 
-	_, err = Copy(client, server)
-	if err != nil && !closed {
-		if errors.Cause(err) != io.EOF {
-			logger.Errorf("[%s] Copy from server to client fail, err: %s", server.RemoteAddr(), err)
-		}
+	err = ants.Submit(func() {
+		defer wg.Done()
+
+		Copy(client, server)
+		tcpClinet.CloseWrite()
+		logger.Debug("server read end")
+	})
+	if err != nil {
+		logger.Errorf("ants.Submit fail: %s", err)
+		return
 	}
-	closed = true
-	client.Close()
-	logger.Debug("remote read end")
+
+	wg.Wait()
+	logger.Debug("proxy end")
 }

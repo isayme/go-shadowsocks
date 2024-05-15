@@ -1,7 +1,6 @@
 package ss
 
 import (
-	"context"
 	"encoding/binary"
 	"io"
 	"net"
@@ -40,7 +39,7 @@ func (c Connection) Write(b []byte) (n int, err error) {
  * read address to be proxyed.
  * used for connection from shadowsocks client
  */
-func (c Connection) readAddress(ctx context.Context) (string, error) {
+func (c Connection) readAddress() (string, error) {
 	data := bufferpool.Get(256)
 	defer bufferpool.Put(data)
 

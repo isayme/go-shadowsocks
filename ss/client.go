@@ -34,7 +34,8 @@ func NewClient(server string, port int, method string, password string, timeout 
 }
 
 func (c *Client) AcceptAndHandle(conn net.Conn) {
-	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
+	logger.Infof("new connection from: %s", conn.RemoteAddr().String())
+	tcpConn, _ := conn.(*net.TCPConn)
 	client := util.NewTimeoutConn(conn, c.timeout)
 	defer client.Close()
 
@@ -51,6 +52,8 @@ func (c *Client) AcceptAndHandle(conn net.Conn) {
 		return
 	}
 
+	tcpRemoteConn, _ := ssconn.(*net.TCPConn)
+	ssconn = util.NewTimeoutConn(ssconn, c.timeout)
 	remote := NewConnection(ssconn, c.method, c.key)
 	defer remote.Close()
 
@@ -60,7 +63,7 @@ func (c *Client) AcceptAndHandle(conn net.Conn) {
 		return
 	}
 
-	util.Proxy(client, remote)
+	util.Proxy(client, tcpConn, remote, tcpRemoteConn)
 
-	logger.Debugf("connection '%s => %s' closed", conn.RemoteAddr().String(), request.RemoteAddress())
+	logger.Infof("connection '%s => %s' closed", conn.RemoteAddr().String(), request.RemoteAddress())
 }

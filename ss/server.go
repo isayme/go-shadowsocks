@@ -1,7 +1,6 @@
 package ss
 
 import (
-	"context"
 	"net"
 	"time"
 
@@ -28,12 +27,12 @@ func NewServer(method string, password string, timeout time.Duration) *Server {
 
 func (s *Server) AcceptAndHandle(conn net.Conn) {
 	logger.Debugf("new connection from: %s", conn.RemoteAddr().String())
-	ssconn := NewConnection(util.NewTimeoutConn(conn, s.timeout), s.method, s.key)
+	tcpConn, _ := conn.(*net.TCPConn)
+	conn = util.NewTimeoutConn(conn, s.timeout)
+	ssconn := NewConnection(conn, s.method, s.key)
 	defer ssconn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), s.timeout)
-	defer cancel()
-	address, err := ssconn.readAddress(ctx)
+	address, err := ssconn.readAddress()
 	if err != nil {
 		logger.Errorw("read address fail", "err", err, "remoteAddr", conn.RemoteAddr().String())
 		return
@@ -41,16 +40,17 @@ func (s *Server) AcceptAndHandle(conn net.Conn) {
 
 	logger.Infof("connecting remote '%s'", address)
 	// dial with timeout
-	remote, err := net.DialTimeout("tcp", address, s.timeout)
+	remote, err := net.DialTimeout("tcp", address, time.Second*5)
 	if err != nil {
 		logger.Warnf("dial remote '%s' failed, err: %+v", address, err)
 		return
 	}
+	tcpRemoteConn, _ := remote.(*net.TCPConn)
 	remote = util.NewTimeoutConn(remote, s.timeout)
 	defer remote.Close()
 	logger.Debugf("connect remote '%s' success", address)
 
-	util.Proxy(ssconn, remote)
+	util.Proxy(ssconn, tcpConn, remote, tcpRemoteConn)
 
 	logger.Debugf("connection '%s => %s' closed", conn.RemoteAddr().String(), address)
 }
