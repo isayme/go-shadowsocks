@@ -19,9 +19,14 @@ func Proxy(client net.Conn, tcpClinet *net.TCPConn, server net.Conn, tcpServer *
 	err := ants.Submit(func() {
 		defer wg.Done()
 
-		Copy(server, client)
+		var err error
+		_, err = Copy(server, client)
 		tcpServer.CloseWrite()
-		logger.Debug("client read end")
+		if err != nil {
+			logger.Errorf("client read err: %v", err)
+		} else {
+			logger.Debug("client read end")
+		}
 	})
 	if err != nil {
 		logger.Errorf("ants.Submit fail: %s", err)
@@ -31,9 +36,14 @@ func Proxy(client net.Conn, tcpClinet *net.TCPConn, server net.Conn, tcpServer *
 	err = ants.Submit(func() {
 		defer wg.Done()
 
-		Copy(client, server)
+		var err error
+		_, err = Copy(client, server)
 		tcpClinet.CloseWrite()
-		logger.Debug("server read end")
+		if err != nil {
+			logger.Errorf("server read err: %v", err)
+		} else {
+			logger.Debug("server read end")
+		}
 	})
 	if err != nil {
 		logger.Errorf("ants.Submit fail: %s", err)
