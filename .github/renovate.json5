@@ -4,9 +4,8 @@
   "extends": [
     "config:recommended",
     ":semanticCommits",
-    ":dependencyDashboard",
     ":separateMajorReleases",
-    ":prHourlyLimit2",
+    ":prHourlyLimit5",
     ":prConcurrentLimit10"
   ],
 
@@ -20,39 +19,29 @@
     "github-actions"
   ],
 
-  "packageRules": [
-    {
-      "description": "Group all Go dependencies",
-      "matchManagers": ["gomod"],
-      "groupName": "golang dependencies"
-    },
-    {
-      "description": "Group GitHub Actions updates",
-      "matchManagers": ["github-actions"],
-      "groupName": "github actions"
-    },
-    {
-      "description": "Group Docker updates",
-      "matchManagers": ["dockerfile"],
-      "groupName": "docker images"
-    },
-    {
-      "description": "Major updates require manual review",
-      "matchUpdateTypes": ["major"],
-      "automerge": false
-    }
-  ],
+  "minimumReleaseAge": "7 days",
 
   "postUpdateOptions": [
     "gomodTidy"
   ],
 
-  "prHourlyLimit": 2,
-  "prConcurrentLimit": 5,
-
-  "minimumReleaseAge": "14 days",
-
-  "rebaseWhen": "conflicted",
-
-  "dependencyDashboard": true
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "groupName": "golang dependencies"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions",
+      "pinDigests": true
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "groupName": "docker images"
+    },
+    {
+      "matchUpdateTypes": ["patch", "minor", "digest"],
+      "automerge": true
+    }
+  ]
 }
