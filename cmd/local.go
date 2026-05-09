@@ -8,7 +8,7 @@ import (
 	logger "github.com/isayme/go-logger"
 	"github.com/isayme/go-shadowsocks/conf"
 	"github.com/isayme/go-shadowsocks/ss"
-	"github.com/panjf2000/ants"
+	"github.com/panjf2000/ants/v2"
 	"github.com/pkg/errors"
 )
 
