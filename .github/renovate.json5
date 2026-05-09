@@ -8,7 +8,7 @@
     ":prHourlyLimit2",
     ":prConcurrentLimit10"
   ],
-
+  "dependencyDashboard": false,
   "labels": ["dependencies", "renovate"],
 
   "timezone": "Asia/Shanghai",
