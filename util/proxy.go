@@ -4,7 +4,7 @@ import (
 	"net"
 	"sync"
 
-	"github.com/panjf2000/ants"
+	"github.com/panjf2000/ants/v2"
 
 	logger "github.com/isayme/go-logger"
 )
