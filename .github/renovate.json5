@@ -50,7 +50,6 @@
   "prHourlyLimit": 2,
   "prConcurrentLimit": 5,
 
-  "matchPackagePatterns": [".*"],
   "minimumReleaseAge": "14 days",
 
   "rebaseWhen": "conflicted",
