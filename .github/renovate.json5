@@ -2,16 +2,19 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
 
   "extends": [
-    "config:recommended",
-    ":semanticCommits",
-    ":separateMajorReleases",
-    ":prHourlyLimit2",
-    ":prConcurrentLimit10"
+    "config:recommended"
   ],
+
   "dependencyDashboard": false,
   "labels": ["dependencies", "renovate"],
 
   "timezone": "Asia/Shanghai",
+
+  "prConcurrentLimit": 10,
+  "prHourlyLimit": 2,
+
+  "semanticCommits": "enabled",
+  "separateMajorMinor": true,
 
   "enabledManagers": [
     "gomod",
