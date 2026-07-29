@@ -8,6 +8,8 @@
   "dependencyDashboard": false,
   "labels": ["dependencies", "renovate"],
 
+  "pinDigests": false,
+
   "timezone": "Asia/Shanghai",
 
   "prConcurrentLimit": 10,
