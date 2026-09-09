@@ -1,6 +1,6 @@
 module github.com/isayme/go-shadowsocks
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/aead/chacha20 v0.0.0-20180709150244-8b13a72661da
@@ -10,7 +10,7 @@ require (
 	github.com/panjf2000/ants/v2 v2.12.1
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
-	golang.org/x/crypto v0.55.0
+	golang.org/x/crypto v0.56.0
 )
 
 require (
